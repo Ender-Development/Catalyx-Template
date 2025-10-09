@@ -1,5 +1,5 @@
 # Catalyx-Template
-Template Repo for creating a mod based on Catalyx.
+Template repo for creating a mod based on [Catalyx](https://github.com/Ender-Development/Catalyx/).
 
 ## References
 This template uses:
@@ -11,12 +11,12 @@ This template is loosely based on:
 - [GregTechCEu - Buildscripts](https://github.com/GregTechCEu/Buildscripts)
 - [GTNewHorizons - ExampleMod1.7.10](https://github.com/GTNewHorizons/ExampleMod1.7.10)
 
-## Dev - Environment
+## Dev environment
 - default maven repositories
-- default mods for assist development
-- everything written in kotlin
+- default mods for assisting with development
+- everything written in Kotlin
 - easy to configure / update
-- gradle options for version management, groovyscript options, reference class creation
-- buildin mixin, coremod and access transformer support
-- instead of environment variables, everything is mananged locally
-- comes with a few handy setup scripts
+- gradle options for version management, GroovyScript options, creating a Reference/Tags class (with stuff like MOD_ID/similar)
+- built-in mixin, coremod and access transformer support
+- credentials are managed locally instead of using environment variables
+- comes with a few handy set-up scripts
