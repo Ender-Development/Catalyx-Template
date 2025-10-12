@@ -1,7 +1,5 @@
-import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask
-import org.jetbrains.changelog.Changelog
-import org.jetbrains.gradle.ext.Gradle
 import java.util.Properties
+import javax.script.ScriptEngineManager
 
 buildscript {
     repositories {
@@ -108,7 +106,7 @@ minecraft {
     if (propertyBoolean("use_tags") && file("gradle/properties/tags.properties").exists()) {
         val props = Properties().apply { load(file("gradle/properties/tags.properties").inputStream()) }
         if (props.isNotEmpty()) {
-            injectedTags.set(props.map { it.key.toString() to interpolate(it.value.toString()) }.toMap())
+            injectedTags.set(props.map { it.key.toString() to evaluate(it.value.toString()) }.toMap())
         }
     }
 }
@@ -192,19 +190,7 @@ fun checkSubPropertiesExist(propertyName: String, vararg subProperties: String) 
 private fun property(propertyName: String): Any? {
     checkPropertyExists(propertyName)
     val value = project.findProperty(propertyName)
-    return if (value is String) interpolate(value) else value
-}
-
-/**
- * Interpolates placeholders in the format `${propertyName}` and `${{expression}}` within the given string.
- *
- * @param value The string containing placeholders to interpolate.
- * @return The interpolated string with all placeholders replaced by their property values.
- * @throws GradleException if a property does not exist or an expression fails to evaluate.
- */
-private fun interpolate(value: String): String {
-    val result = evaluate(value)
-    return placeHolder(result)
+    return if (value is String) evaluate(value) else value
 }
 
 /**
@@ -217,20 +203,17 @@ private fun interpolate(value: String): String {
  * @throws GradleException if an expression fails to evaluate.
  */
 private fun evaluate(value: String): String {
-    var result = value
-    val evaluate = "\\$\\{\\{\\s*([^}]+)\\s*\\}\\}".toRegex()
-    evaluate.findAll(value).forEach { matchResult ->
-        val placeholder = matchResult.value
-        val expression = matchResult.groupValues[1]
-        val replacement = try {
-            val engine = javax.script.ScriptEngineManager().getEngineByName("kotlin")
-            engine.eval(placeHolder(expression)).toString()
+    if (value.startsWith("\${{") && value.endsWith("}}")) {
+        val expression = placeHolder(value.substring(3, value.length - 2).trim())
+        return try {
+            val engine = ScriptEngineManager().getEngineByExtension("kts")
+                ?: throw GradleException("Kotlin scripting engine not found for expression evaluation.")
+            engine.eval(expression).toString()
         } catch (e: Exception) {
             throw GradleException("Failed to evaluate expression '$expression' in property interpolation.", e)
         }
-        result = result.replace(placeholder, replacement)
     }
-    return result
+    return placeHolder(value)
 }
 
 /**
