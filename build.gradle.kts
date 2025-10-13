@@ -1,3 +1,4 @@
+import groovy.lang.GroovyShell
 import java.util.Properties
 import javax.script.ScriptEngineManager
 
@@ -206,11 +207,11 @@ private fun evaluate(value: String): String {
     if (value.startsWith("\${{") && value.endsWith("}}")) {
         val expression = placeHolder(value.substring(3, value.length - 2).trim())
         return try {
-            val engine = ScriptEngineManager().getEngineByExtension("kts")
-                ?: throw GradleException("Kotlin scripting engine not found for expression evaluation.")
-            engine.eval(expression).toString()
+            val eval = GroovyShell().evaluate(expression).toString()
+            project.logger.info("Evaluated expression '$expression' to '$eval'")
+            eval
         } catch (e: Exception) {
-            throw GradleException("Failed to evaluate expression '$expression' in property interpolation.", e)
+            throw GradleException("Failed to evaluate expression '$expression' in property evaluation.", e)
         }
     }
     return placeHolder(value)
