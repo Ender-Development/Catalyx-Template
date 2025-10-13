@@ -37,5 +37,13 @@ repositories {
         name = "Ender-Development Maven"
         url = uri("https://maven.ender-development.org/")
     }
+    maven {
+        name = "GTNH Maven"
+        url = uri("https://nexus.gtnewhorizons.com/repository/public/")
+    }
+    maven {
+        name = "GTCEu Maven"
+        url = uri("https://maven.gtceu.com")
+    }
     mavenLocal() // Must be last for caching to work
 }

@@ -135,6 +135,12 @@ dependencies {
         else compileOnly(this) { isTransitive = transitive }
     }
 
+    compileOnlyApi("org.jetbrains:annotations:24.1.0")
+    annotationProcessor("org.jetbrains:annotations:24.1.0")
+    patchedMinecraft("net.minecraft:launchwrapper:1.17.2") {
+        isTransitive = false
+    }
+
     // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
     runtimeOnly("com.cleanroommc:strip-latest-forge-requirements:1.0")
     // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
