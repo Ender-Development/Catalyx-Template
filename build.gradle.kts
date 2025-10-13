@@ -1,6 +1,5 @@
 import groovy.lang.GroovyShell
-import java.util.Properties
-import javax.script.ScriptEngineManager
+import java.util.*
 
 buildscript {
     repositories {
@@ -117,9 +116,67 @@ repositories {
 }
 apply(from = "gradle/scripts/repositories.gradle.kts")
 
-apply(from = "gradle/scripts/dependencies.gradle.kts")
+dependencies {
+    /**
+     * Adds the dependency as an implementation dependency if the specified property is true,
+     * otherwise adds it as a compileOnly dependency.
+     *
+     * @param run The name of the property to check.
+     * @receiver The dependency notation to add.
+     */
+    fun String.dependency(run: String, transitive: Boolean = true, useRFG: Boolean = false) {
+        val presentAtRuntime = propertyBoolean(run)
+        if (useRFG) {
+            if (presentAtRuntime) implementation(rfg.deobf(this))
+            else compileOnly(rfg.deobf(this))
+            return
+        }
+        if (presentAtRuntime) implementation(this) { isTransitive = transitive }
+        else compileOnly(this) { isTransitive = transitive }
+    }
 
-dependencies {}
+    // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
+    runtimeOnly("com.cleanroommc:strip-latest-forge-requirements:1.0")
+    // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
+    runtimeOnly("com.cleanroommc:osxnarratorblocker:1.0")
+
+    // Mixins
+    if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
+        val mixin = modUtils.enableMixins(
+            "zone.rong:mixinbooter:${propertyString("mixin_booter_version")}", propertyString("mixin_refmap")
+        ).toString()
+        api(mixin) {
+            isTransitive = false
+        }
+        annotationProcessor("org.ow2.asm:asm-debug-all:5.2")
+        annotationProcessor("com.google.guava:guava:32.1.2-jre")
+        annotationProcessor("com.google.code.gson:gson:2.8.9")
+        annotationProcessor(mixin) {
+            isTransitive = false
+        }
+    }
+
+    // Required dependencies
+    "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
+        "use_forgelincontinuous", false
+    )
+    "com.cleanroommc:configanytime:${propertyString("configanytime_version")}".dependency("use_configanytime")
+    "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")
+    "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
+
+    if (propertyBoolean("use_catalyx")) {
+        implementation("org.ender_development:catalyx:${propertyString("catalyx_version")}")
+    }
+
+    // Optional dependencies
+    "com.cleanroommc:groovyscript:${propertyString("groovyscript_version")}".dependency("use_groovyscript", false)
+    "mezz:jei:${propertyString("hei_version")}".dependency("use_hei")
+    "curse.maven:theonesmeagle-977883:${propertyString("top_version")}".dependency("use_top", useRFG = true)
+
+    "CraftTweaker2:CraftTweaker2-API:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+    "CraftTweaker2:ZenScript:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+    "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+}
 
 // Utility functions
 
@@ -203,7 +260,7 @@ private fun property(propertyName: String): Any? {
  * @return The string with all expressions evaluated and replaced by their results.
  * @throws GradleException if an expression fails to evaluate.
  */
-private fun evaluate(value: String): String {
+fun evaluate(value: String): String {
     if (value.startsWith("\${{") && value.endsWith("}}")) {
         val expression = placeHolder(value.substring(3, value.length - 2).trim())
         return try {
