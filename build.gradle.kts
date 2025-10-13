@@ -184,6 +184,19 @@ dependencies {
     "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
 }
 
+// Manage Access Transformers
+if (propertyBoolean("use_access_transformer")) {
+    propertyStringList("access_transformer_locations").forEach {
+        val atFile = file("$projectDir/src/main/resources/$it")
+        if (atFile.exists()) {
+            tasks.deobfuscateMergedJarToSrg.get().accessTransformerFiles.from(atFile)
+            tasks.srgifyBinpatchedJar.get().accessTransformerFiles.from(atFile)
+        } else {
+            throw GradleException("Access Transformer file '$it' does not exist!")
+        }
+    }
+}
+
 // Utility functions
 
 /**
