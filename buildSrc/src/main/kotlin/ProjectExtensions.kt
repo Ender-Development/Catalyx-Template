@@ -123,8 +123,8 @@ fun Project.propertyString(propertyName: String): String = evalProperty(property
  * @return The value of the property as a List of Strings.
  * @throws GradleException if the property does not exist.
  */
-fun Project.propertyStringList(propertyName: String, delimiter: String = " "): List<String> =
-    propertyString(propertyName).split(delimiter).filter { it.isNotEmpty() }
+fun Project.propertyStringList(propertyName: String, delimiter: String = " "): MutableList<String> =
+    propertyString(propertyName).split(delimiter).filter { it.isNotEmpty() }.toMutableList()
 
 /**
  * Retrieves the value of a property as a Boolean.

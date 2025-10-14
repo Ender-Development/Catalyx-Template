@@ -1,15 +1,9 @@
-import groovy.lang.GroovyShell
-import java.util.*
+import propertyBoolean
+import propertyString
+import propertyStringList
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion}")
-    }
-}
+loadAllProperties()
+loadDefaultSetup()
 
 plugins {
     id("java")
@@ -25,8 +19,6 @@ plugins {
     // Formatters
     id("com.diffplug.gradle.spotless") version "8.0.0" apply false
 }
-
-loadAllProperties()
 
 checkPropertyExists("root_package")
 checkPropertyExists("mod_id")
@@ -54,25 +46,6 @@ checkSubPropertiesExist("use_crafttweaker", "crafttweaker_version")
 checkSubPropertiesExist("use_groovyscript", "groovyscript_version")
 checkSubPropertiesExist("use_hei", "hei_version")
 checkSubPropertiesExist("use_top", "top_version")
-
-group = propertyString("root_package")
-version = propertyString("mod_version")
-
-base {
-    archivesName = propertyString("mod_id")
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-        // Azul covers the most platforms for Java 8+ toolchains, crucially including MacOS arm64
-        vendor.set(JvmVendorSpec.AZUL)
-    }
-    if (propertyBoolean("generate_sources_jar")) withSourcesJar()
-
-    if (propertyBoolean("generate_javadocs_jar")) withJavadocJar()
-
-}
 
 kotlin {
     jvmToolchain(8)
@@ -113,6 +86,8 @@ minecraft {
 loadDefaultRepositories()
 loadDefaultDependencies()
 dependencies {
+    // These are only here as I can't get RetroFutora gradle to work in our buildSrc
+
     // Mixins
     if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
         val mixin = modUtils.enableMixins(
@@ -131,10 +106,8 @@ dependencies {
 
     // TOP
     val top = "curse.maven:theonesmeagle-977883:${propertyString("top_version")}"
-    if (propertyBoolean("use_top"))
-        dep("runtimeOnly", top)
-    else
-        dep("implementation", (rfg.deobf(top)))
+    if (propertyBoolean("use_top")) dep("implementation", top)
+    else dep("compileOnly", (rfg.deobf(top)))
 }
 
 // Manage Access Transformers
@@ -146,6 +119,88 @@ if (propertyBoolean("use_access_transformer")) {
             tasks.srgifyBinpatchedJar.get().accessTransformerFiles.from(atFile)
         } else {
             throw GradleException("Access Transformer file '$it' does not exist!")
+        }
+    }
+}
+
+tasks.injectTags.configure {
+    outputClassName = propertyString("tag_class_name")
+}
+
+tasks.withType<ProcessResources> {
+    // This will ensure that this task is redone when the versions change
+    inputs.property("mod_id", propertyString("mod_id"))
+    inputs.property("mod_name", propertyString("mod_name"))
+    inputs.property("mod_version", propertyString("mod_version"))
+    inputs.property("mod_description", propertyString("mod_description"))
+    inputs.property("mod_authors", "${propertyStringList("mod_authors", ",").add(", ")}")
+    inputs.property("mod_credits", propertyString("mod_credits"))
+    inputs.property("mod_url", propertyString("mod_url"))
+    inputs.property("mod_logo_path", propertyString("mod_logo_path"))
+    inputs.property("mixin_refmap", propertyString("mixin_refmap"))
+
+    // Replace various properties in mcmod.info and pack.mcmeta if applicable
+    filesMatching(arrayListOf("mcmod.info", "pack.mcmeta")) {
+        expand(
+            "mod_id" to propertyString("mod_id"),
+            "mod_name" to propertyString("mod_name"),
+            "mod_version" to propertyString("mod_version"),
+            "mod_description" to propertyString("mod_description"),
+            "mod_authors" to "${propertyStringList("mod_authors", ",").add(", ")}",
+            "mod_credits" to propertyString("mod_credits"),
+            "mod_url" to propertyString("mod_url"),
+            "mod_logo_path" to propertyString("mod_logo_path"),
+            "mixin_refmap" to propertyString("mixin_refmap")
+        )
+    }
+
+    if (propertyBoolean("use_access_transformer")) {
+        rename("(.+_at.cfg)", "META-INF/$1") // Make sure Access Transformer files are in META-INF folder
+    }
+}
+
+tasks.withType<Jar> {
+    manifest {
+        val attributeMap = mutableMapOf<String, String>()
+        if (propertyBoolean("is_coremod")) {
+            attributeMap["FMLCorePlugin"] = propertyString("coremod_plugin_class_name")
+            if (propertyBoolean("coremod_includes_mod")) {
+                attributeMap["FMLCorePluginContainsFMLMod"] = "true"
+                val currentTask = gradle.startParameter.taskNames
+                val validTasks = listOf("build", "prepareObfModsFolder", "runObfClient")
+                if (currentTask[0] in validTasks) attributeMap["ForceLoadAsMod"] = "true"
+            }
+        }
+        if (propertyBoolean("use_access_transformer")) attributeMap["FMLAT"] =
+            propertyString("access_transformer_locations")
+        attributes(attributeMap)
+    }
+    // Add all embedded dependencies into the jar
+    from(provider {
+        configurations.getByName("embed").map {
+            if (it.isDirectory()) it else zipTree(it)
+        }
+    })
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
+
+tasks.register("catalyxAfterSync") {
+    group = "catalyx"
+    description = "Task that runs after the template has been synced. Can be used for custom actions."
+    dependsOn("injectTags")
+}
+
+tasks.named("prepareObfModsFolder").configure {
+    finalizedBy("prioritizeCoremods")
+}
+
+tasks.register("prioritizeCoremods") {
+    dependsOn("prepareObfModsFolder")
+    doLast {
+        fileTree("run/obfuscated").forEach {
         }
     }
 }
