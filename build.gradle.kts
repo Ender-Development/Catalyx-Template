@@ -19,7 +19,6 @@ plugins {
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
     id("com.gtnewhorizons.retrofuturagradle") version "1.4.1"
     id("org.jetbrains.changelog") version "2.2.1"
-    id("at.stnwtr.gradle-secrets-plugin") version "1.0.1"
     // Publishing
     id("com.matthewprenger.cursegradle") version "1.4.0" apply false
     id("com.modrinth.minotaur") version "2.+" apply false
@@ -28,6 +27,7 @@ plugins {
 }
 
 loadProjectProperties()
+loadAllProperties()
 
 checkPropertyExists("root_package")
 checkPropertyExists("mod_id")
@@ -366,8 +366,10 @@ fun propertyDefaultIfUnset(propertyName: String, defaultValue: Any?) {
 fun propertyDefaultIfUnsetWithEnvVar(propertyName: String, envVarName: String, defaultValue: Any?) {
     // Searches in the 'secrets.properties' first. If not found in the file, it checks the environment variables.
     // If neither is found it will return null.
-    val envVarValue = secrets.getOrEnv(envVarName)
-    envVarValue?.let {
-        project.extensions.extraProperties.set(propertyName, it)
-    } ?: propertyDefaultIfUnset(propertyName, defaultValue)
+//    val envVarValue = secrets.getOrEnv(envVarName)
+//    envVarValue?.let {
+//        project.extensions.extraProperties.set(propertyName, it)
+//    } ?: propertyDefaultIfUnset(propertyName, defaultValue)
+    propertyDefaultIfUnset(propertyName, defaultValue)
 }
+
