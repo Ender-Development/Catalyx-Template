@@ -16,9 +16,11 @@ out
 # gradle
 build
 .gradle
+.kotlin
 secrets.properties
 
 # other
 eclipse
 run
 .vscode
+*.log
