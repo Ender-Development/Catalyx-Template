@@ -1,0 +1,66 @@
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.dependencies
+
+/**
+ * Adds a dependency to the specified configuration with an option to set its transitivity.
+ *
+ * @param configuration The configuration to which the dependency should be added (e.g., "implementation", "compileOnly").
+ * @param notation The dependency notation (e.g., "group:name:version").
+ * @param transitive Whether the dependency should be transitive. Default is true.
+ * @receiver The DependencyHandler to which the dependency is added.
+ */
+fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true) {
+    PluginLogger.log("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive)")
+    val dep = add(configuration, notation)
+    (dep as? ModuleDependency)?.isTransitive = transitive
+}
+
+fun Project.loadDefaultDependencies() {
+    dependencies {
+        /**
+         * Adds the dependency as an implementation dependency if the specified property is true,
+         * otherwise adds it as a compileOnly dependency.
+         *
+         * @param run The name of the property to check.
+         * @param transitive Whether the dependency should be transitive. Default is true.
+         * @receiver The dependency notation to add.
+         */
+        fun String.dependency(run: String, transitive: Boolean = true) {
+            val presentAtRuntime = propertyBoolean(run)
+            if (presentAtRuntime) dep("implementation", this.toString(), transitive)
+            else dep("compileOnly", this.toString(), transitive)
+        }
+
+        "compileOnlyApi"("org.jetbrains:annotations:24.1.0")
+        "annotationProcessor"("org.jetbrains:annotations:24.1.0")
+
+        dep("patchedMinecraft", "net.minecraft:launchwrapper:1.17.2", false)
+
+        // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
+        "runtimeOnly"("com.cleanroommc:strip-latest-forge-requirements:1.0")
+        // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
+        "runtimeOnly"("com.cleanroommc:osxnarratorblocker:1.0")
+
+        // Required dependencies
+        "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
+            "use_forgelincontinuous", false
+        )
+        "com.cleanroommc:configanytime:${propertyString("configanytime_version")}".dependency("use_configanytime")
+        "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")
+        "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
+
+        if (propertyBoolean("use_catalyx")) {
+            "implementation"("org.ender_development:catalyx:${propertyString("catalyx_version")}")
+        }
+
+        // Optional dependencies
+        "com.cleanroommc:groovyscript:${propertyString("groovyscript_version")}".dependency("use_groovyscript", false)
+        "mezz:jei:${propertyString("hei_version")}".dependency("use_hei")
+
+        "CraftTweaker2:CraftTweaker2-API:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+        "CraftTweaker2:ZenScript:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+        "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+    }
+}

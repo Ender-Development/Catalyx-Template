@@ -102,49 +102,17 @@ minecraft {
     extraRunJvmArguments.addAll(args)
     extraRunJvmArguments.addAll(propertyStringList("extra_jvm_args", delimiter = ";"))
 
-    if (propertyBoolean("use_tags") && file("gradle/properties/tags.properties").exists()) {
-        val props = Properties().apply { load(file("gradle/properties/tags.properties").inputStream()) }
+    if (propertyBoolean("use_tags")) {
+        val props = getProperties("tags.properties")
         if (props.isNotEmpty()) {
             injectedTags.set(props.map { it.key.toString() to evaluate(it.value.toString()) }.toMap())
         }
     }
 }
 
-repositories {
-    mavenCentral()
-}
-apply(from = "gradle/scripts/repositories.gradle.kts")
-
+loadDefaultRepositories()
+loadDefaultDependencies()
 dependencies {
-    /**
-     * Adds the dependency as an implementation dependency if the specified property is true,
-     * otherwise adds it as a compileOnly dependency.
-     *
-     * @param run The name of the property to check.
-     * @receiver The dependency notation to add.
-     */
-    fun String.dependency(run: String, transitive: Boolean = true, useRFG: Boolean = false) {
-        val presentAtRuntime = propertyBoolean(run)
-        if (useRFG) {
-            if (presentAtRuntime) implementation(rfg.deobf(this))
-            else compileOnly(rfg.deobf(this))
-            return
-        }
-        if (presentAtRuntime) implementation(this) { isTransitive = transitive }
-        else compileOnly(this) { isTransitive = transitive }
-    }
-
-    compileOnlyApi("org.jetbrains:annotations:24.1.0")
-    annotationProcessor("org.jetbrains:annotations:24.1.0")
-    patchedMinecraft("net.minecraft:launchwrapper:1.17.2") {
-        isTransitive = false
-    }
-
-    // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
-    runtimeOnly("com.cleanroommc:strip-latest-forge-requirements:1.0")
-    // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
-    runtimeOnly("com.cleanroommc:osxnarratorblocker:1.0")
-
     // Mixins
     if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
         val mixin = modUtils.enableMixins(
@@ -161,26 +129,12 @@ dependencies {
         }
     }
 
-    // Required dependencies
-    "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
-        "use_forgelincontinuous", false
-    )
-    "com.cleanroommc:configanytime:${propertyString("configanytime_version")}".dependency("use_configanytime")
-    "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")
-    "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
-
-    if (propertyBoolean("use_catalyx")) {
-        implementation("org.ender_development:catalyx:${propertyString("catalyx_version")}")
-    }
-
-    // Optional dependencies
-    "com.cleanroommc:groovyscript:${propertyString("groovyscript_version")}".dependency("use_groovyscript", false)
-    "mezz:jei:${propertyString("hei_version")}".dependency("use_hei")
-    "curse.maven:theonesmeagle-977883:${propertyString("top_version")}".dependency("use_top", useRFG = true)
-
-    "CraftTweaker2:CraftTweaker2-API:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
-    "CraftTweaker2:ZenScript:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
-    "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+    // TOP
+    val top = "curse.maven:theonesmeagle-977883:${propertyString("top_version")}"
+    if (propertyBoolean("use_top"))
+        dep("runtimeOnly", top)
+    else
+        dep("implementation", (rfg.deobf(top)))
 }
 
 // Manage Access Transformers

@@ -2,6 +2,7 @@ import groovy.lang.GroovyShell
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.internal.extensions.core.extra
+import java.util.*
 
 fun Project.loadAllProperties() {
     PropertyLoader.loadProperties("build.properties")
@@ -10,11 +11,15 @@ fun Project.loadAllProperties() {
     PropertyLoader.loadProperties("publishing.properties")
     PropertyLoader.loadProperties("utilities.properties")
 
-    PropertyLoader.loadProperties("secrets.properties", false)
+    PropertyLoader.loadProperties(SecretsManager.PROPERTIES_FILE, true)
 
     PropertyLoader.getAllProperties().forEach { (key, value) ->
         this.extra.set(key, value)
     }
+}
+
+fun Project.getProperties(filePath: String, external: Boolean = false): Properties {
+    return PropertyLoader.getProperties(filePath, external)
 }
 
 
