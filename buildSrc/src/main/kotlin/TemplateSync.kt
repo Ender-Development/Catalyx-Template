@@ -13,6 +13,10 @@ object TemplateSync {
         "integration.properties" to SyncConfig(
             keysToSync = listOf("crafttweaker_version", "groovyscript_version", "hei_version", "top_version"),
             syncAll = false
+        ),
+        "utilities.properties" to SyncConfig(
+            keysToSync = listOf("ktfmt_version"),
+            syncAll = false
         )
     )
 

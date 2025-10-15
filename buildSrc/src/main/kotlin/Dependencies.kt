@@ -29,8 +29,12 @@ fun Project.loadDefaultDependencies() {
          */
         fun String.dependency(run: String, transitive: Boolean = true) {
             val presentAtRuntime = propertyBoolean(run)
-            if (presentAtRuntime) dep("implementation", this.toString(), transitive)
-            else dep("compileOnly", this.toString(), transitive)
+            if (presentAtRuntime) dep("implementation", this, transitive)
+            else dep("compileOnly", this, transitive)
+        }
+
+        fun String.requiresMixins() {
+            if (propertyBoolean("use_mixinbooter")) dep("runtimeOnly", this)
         }
 
         "compileOnlyApi"("org.jetbrains:annotations:24.1.0")
@@ -39,9 +43,9 @@ fun Project.loadDefaultDependencies() {
         dep("patchedMinecraft", "net.minecraft:launchwrapper:1.17.2", false)
 
         // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
-        "runtimeOnly"("com.cleanroommc:strip-latest-forge-requirements:1.0")
+        "com.cleanroommc:strip-latest-forge-requirements:1.0".requiresMixins()
         // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
-        "runtimeOnly"("com.cleanroommc:osxnarratorblocker:1.0")
+        "com.cleanroommc:osxnarratorblocker:1.0".requiresMixins()
 
         // Required dependencies
         "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(

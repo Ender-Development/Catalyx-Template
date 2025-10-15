@@ -1,6 +1,7 @@
-import propertyBoolean
+import okhttp3.internal.format
+import org.jetbrains.gradle.ext.*
+import org.jetbrains.kotlin.gradle.internal.builtins.StandardNames.FqNames.target
 import propertyString
-import propertyStringList
 
 loadAllProperties()
 loadDefaultSetup()
@@ -17,7 +18,7 @@ plugins {
     id("com.matthewprenger.cursegradle") version "1.4.0" apply false
     id("com.modrinth.minotaur") version "2.+" apply false
     // Formatters
-    id("com.diffplug.gradle.spotless") version "8.0.0" apply false
+    id("com.diffplug.spotless") version "8.0.0" apply false
 }
 
 checkPropertyExists("root_package")
@@ -85,9 +86,9 @@ minecraft {
 
 loadDefaultRepositories()
 loadDefaultDependencies()
-dependencies {
-    // These are only here as I can't get RetroFutora gradle to work in our buildSrc
 
+// These are only here as I can't get RetroFuturaGradle to work in our buildSrc
+dependencies {
     // Mixins
     if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
         val mixin = modUtils.enableMixins(
@@ -119,6 +120,58 @@ if (propertyBoolean("use_access_transformer")) {
             tasks.srgifyBinpatchedJar.get().accessTransformerFiles.from(atFile)
         } else {
             throw GradleException("Access Transformer file '$it' does not exist!")
+        }
+    }
+}
+
+// Spotless for code formatting
+if (propertyBoolean("use_spotless")) {
+    apply(plugin = "com.diffplug.spotless")
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        encoding("UTF-8")
+
+        format("misc") {
+            target(".gitignore")
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+
+        kotlin {
+            target("src/*/kotlin/**/*.kt")
+            toggleOffOn()
+            ktfmt(propertyString("ktfmt_version"))
+
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+
+        kotlinGradle {
+            target("*.kts", "buildSrc/src/**/*.kts")
+            toggleOffOn()
+            ktfmt(propertyString("ktfmt_version"))
+
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+
+        java {
+            target("src/*/java/**/*.java")
+            toggleOffOn()
+            importOrder()
+
+            removeUnusedImports()
+
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            googleJavaFormat(propertyString("google_java_format_version"))
+
+            formatAnnotations()
+        }
+
+        json {
+            target("src/*/resources/**/*.json")
+            gson().indentWithSpaces(2)
         }
     }
 }
@@ -201,6 +254,55 @@ tasks.register("prioritizeCoremods") {
     dependsOn("prepareObfModsFolder")
     doLast {
         fileTree("run/obfuscated").forEach {
+            if (it.isFile && it.name.matches(Regex("(mixinbooter|configanytime)-[0-9]+\\.[0-9]+\\.jar"))) {
+                it.renameTo(File(it.parentFile, "!${it.name}"))
+            }
+        }
+    }
+}
+
+idea {
+    module {
+        inheritOutputDirs = true
+        isDownloadJavadoc = true
+        isDownloadSources = true
+    }
+    project {
+        settings {
+            taskTriggers {
+                afterSync("catalyxAfterSync")
+            }
+            runConfigurations {
+                add(Gradle("1. Setup Workspace").apply {
+                    setProperty("taskNames", listOf("setupDecompWorkspace"))
+                })
+                add(Gradle("2. Run Client").apply {
+                    setProperty("taskNames", listOf("runClient"))
+                })
+                add(Gradle("3. Run Server").apply {
+                    setProperty("taskNames", listOf("runServer"))
+                })
+                add(Gradle("4. Run Obfuscated Client").apply {
+                    setProperty("taskNames", listOf("runObfClient"))
+                })
+                add(Gradle("5. Run Obfuscated Server").apply {
+                    setProperty("taskNames", listOf("runObfServer"))
+                })
+                add(Gradle("6. Run Spotless Apply").apply {
+                    setProperty("taskNames", listOf("spotlessApply"))
+                })
+                add(Gradle("7. Build Jars").apply {
+                    setProperty("taskNames", listOf("build"))
+                })
+            }
+            compiler.javac {
+                afterEvaluate {
+                    javacAdditionalOptions = "-encoding utf8"
+                    moduleJavacAdditionalOptions = mapOf(
+                        "${project.name}.main" to tasks.compileJava.get().options.compilerArgs.joinToString(" ") { "\"$it\"" }
+                    )
+                }
+            }
         }
     }
 }
