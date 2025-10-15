@@ -187,7 +187,7 @@ tasks.withType<ProcessResources> {
     inputs.property("mod_name", propertyString("mod_name"))
     inputs.property("mod_version", propertyString("mod_version"))
     inputs.property("mod_description", propertyString("mod_description"))
-    inputs.property("mod_authors", "${propertyStringList("mod_authors", ",").add(", ")}")
+    inputs.property("mod_authors", propertyStringList("mod_authors", ",").joinToString(", "))
     inputs.property("mod_credits", propertyString("mod_credits"))
     inputs.property("mod_url", propertyString("mod_url"))
     inputs.property("mod_logo_path", propertyString("mod_logo_path"))
@@ -201,7 +201,7 @@ tasks.withType<ProcessResources> {
             "mod_name" to propertyString("mod_name"),
             "mod_version" to propertyString("mod_version"),
             "mod_description" to propertyString("mod_description"),
-            "mod_authors" to "${propertyStringList("mod_authors", ",").add(", ")}",
+            "mod_authors" to propertyStringList("mod_authors", ",").joinToString(", "),
             "mod_credits" to propertyString("mod_credits"),
             "mod_url" to propertyString("mod_url"),
             "mod_logo_path" to propertyString("mod_logo_path"),
