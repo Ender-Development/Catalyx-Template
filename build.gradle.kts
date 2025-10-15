@@ -1,9 +1,8 @@
-import okhttp3.internal.format
+import com.diffplug.spotless.kotlin.KtfmtStep.TrailingCommaManagementStrategy
 import org.jetbrains.gradle.ext.*
-import org.jetbrains.kotlin.gradle.internal.builtins.StandardNames.FqNames.target
-import propertyString
 
 loadAllProperties()
+
 loadDefaultSetup()
 
 plugins {
@@ -22,35 +21,47 @@ plugins {
 }
 
 checkPropertyExists("root_package")
+
 checkPropertyExists("mod_id")
+
 propertyDefaultIfUnset("mod_name", propertyString("mod_id"))
+
 checkPropertyExists("mod_version")
+
 checkPropertyExists("minecraft_version")
 
 propertyDefaultIfUnsetWithEnvVar("minecraft_username", "DEV_USERNAME", "Developer")
 
 // Utilities
 checkSubPropertiesExist("use_tags", "tag_class_name")
+
 checkSubPropertiesExist("use_access_transformer", "access_transformer_locations")
+
 checkSubPropertiesExist("is_coremod", "coremod_includes_mod", "coremod_plugin_class_name")
 
 // Dependencies
 checkSubPropertiesExist("use_assetmover", "assetmover_version")
+
 checkSubPropertiesExist("use_catalyx", "catalyx_version")
+
 checkSubPropertiesExist("use_configanytime", "configanytime_version")
+
 checkSubPropertiesExist("use_forgelincontinuous", "forgelin_continuous_version")
+
 checkSubPropertiesExist("use_mixinbooter", "mixin_booter_version", "mixin_refmap")
+
 checkSubPropertiesExist("use_modularui", "modularui_version")
 
 // Integrations
 checkSubPropertiesExist("use_crafttweaker", "crafttweaker_version")
+
 checkSubPropertiesExist("use_groovyscript", "groovyscript_version")
+
 checkSubPropertiesExist("use_hei", "hei_version")
+
 checkSubPropertiesExist("use_top", "top_version")
 
-kotlin {
-    jvmToolchain(8)
-}
+kotlin { jvmToolchain(8) }
 
 minecraft {
     mcVersion = propertyString("minecraft_version")
@@ -85,30 +96,27 @@ minecraft {
 }
 
 loadDefaultRepositories()
+
 loadDefaultDependencies()
 
 // These are only here as I can't get RetroFuturaGradle to work in our buildSrc
 dependencies {
     // Mixins
     if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
-        val mixin = modUtils.enableMixins(
-            "zone.rong:mixinbooter:${propertyString("mixin_booter_version")}", propertyString("mixin_refmap")
-        ).toString()
-        api(mixin) {
-            isTransitive = false
-        }
+        val mixin =
+            modUtils
+                .enableMixins("zone.rong:mixinbooter:${propertyString("mixin_booter_version")}", propertyString("mixin_refmap"))
+                .toString()
+        api(mixin) { isTransitive = false }
         annotationProcessor("org.ow2.asm:asm-debug-all:5.2")
         annotationProcessor("com.google.guava:guava:32.1.2-jre")
         annotationProcessor("com.google.code.gson:gson:2.8.9")
-        annotationProcessor(mixin) {
-            isTransitive = false
-        }
+        annotationProcessor(mixin) { isTransitive = false }
     }
 
     // TOP
     val top = "curse.maven:theonesmeagle-977883:${propertyString("top_version")}"
-    if (propertyBoolean("use_top")) dep("implementation", top)
-    else dep("compileOnly", (rfg.deobf(top)))
+    if (propertyBoolean("use_top")) dep("implementation", top) else dep("compileOnly", (rfg.deobf(top)))
 }
 
 // Manage Access Transformers
@@ -138,17 +146,27 @@ if (propertyBoolean("use_spotless")) {
 
         kotlin {
             target("src/*/kotlin/**/*.kt")
-            toggleOffOn()
-            ktfmt(propertyString("ktfmt_version"))
+            ktfmt(propertyString("ktfmt_version")).googleStyle().configure {
+                it.setMaxWidth(140)
+                it.setBlockIndent(4)
+                it.setContinuationIndent(4)
+                it.setRemoveUnusedImports(true)
+                it.setTrailingCommaManagementStrategy(TrailingCommaManagementStrategy.NONE)
+            }
 
             trimTrailingWhitespace()
             endWithNewline()
         }
 
         kotlinGradle {
-            target("*.kts", "buildSrc/src/**/*.kts")
-            toggleOffOn()
-            ktfmt(propertyString("ktfmt_version"))
+            target("*.gradle.kts", "buildSrc/src/**/*.gradle.kts")
+            ktfmt(propertyString("ktfmt_version")).googleStyle().configure {
+                it.setMaxWidth(140)
+                it.setBlockIndent(4)
+                it.setContinuationIndent(4)
+                it.setRemoveUnusedImports(true)
+                it.setTrailingCommaManagementStrategy(TrailingCommaManagementStrategy.NONE)
+            }
 
             trimTrailingWhitespace()
             endWithNewline()
@@ -156,8 +174,6 @@ if (propertyBoolean("use_spotless")) {
 
         java {
             target("src/*/java/**/*.java")
-            toggleOffOn()
-            importOrder()
 
             removeUnusedImports()
 
@@ -176,9 +192,7 @@ if (propertyBoolean("use_spotless")) {
     }
 }
 
-tasks.injectTags.configure {
-    outputClassName = propertyString("tag_class_name")
-}
+tasks.injectTags.configure { outputClassName = propertyString("tag_class_name") }
 
 tasks.withType<ProcessResources> {
     // This will ensure that this task is redone when the versions change
@@ -226,21 +240,14 @@ tasks.withType<Jar> {
                 if (currentTask[0] in validTasks) attributeMap["ForceLoadAsMod"] = "true"
             }
         }
-        if (propertyBoolean("use_access_transformer")) attributeMap["FMLAT"] =
-            propertyString("access_transformer_locations")
+        if (propertyBoolean("use_access_transformer")) attributeMap["FMLAT"] = propertyString("access_transformer_locations")
         attributes(attributeMap)
     }
     // Add all embedded dependencies into the jar
-    from(provider {
-        configurations.getByName("embed").map {
-            if (it.isDirectory()) it else zipTree(it)
-        }
-    })
+    from(provider { configurations.getByName("embed").map { if (it.isDirectory()) it else zipTree(it) } })
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
+tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
 
 tasks.register("catalyxAfterSync") {
     group = "catalyx"
@@ -248,9 +255,7 @@ tasks.register("catalyxAfterSync") {
     dependsOn("injectTags")
 }
 
-tasks.named("prepareObfModsFolder").configure {
-    finalizedBy("prioritizeCoremods")
-}
+tasks.named("prepareObfModsFolder").configure { finalizedBy("prioritizeCoremods") }
 
 tasks.register("prioritizeCoremods") {
     dependsOn("prepareObfModsFolder")
@@ -271,38 +276,21 @@ idea {
     }
     project {
         settings {
-            taskTriggers {
-                afterSync("catalyxAfterSync")
-            }
+            taskTriggers { afterSync("catalyxAfterSync") }
             runConfigurations {
-                add(Gradle("1. Setup Workspace").apply {
-                    setProperty("taskNames", listOf("setupDecompWorkspace"))
-                })
-                add(Gradle("2. Run Client").apply {
-                    setProperty("taskNames", listOf("runClient"))
-                })
-                add(Gradle("3. Run Server").apply {
-                    setProperty("taskNames", listOf("runServer"))
-                })
-                add(Gradle("4. Run Obfuscated Client").apply {
-                    setProperty("taskNames", listOf("runObfClient"))
-                })
-                add(Gradle("5. Run Obfuscated Server").apply {
-                    setProperty("taskNames", listOf("runObfServer"))
-                })
-                add(Gradle("6. Run Spotless Apply").apply {
-                    setProperty("taskNames", listOf("spotlessApply"))
-                })
-                add(Gradle("7. Build Jars").apply {
-                    setProperty("taskNames", listOf("build"))
-                })
+                add(Gradle("1. Setup Workspace").apply { setProperty("taskNames", listOf("setupDecompWorkspace")) })
+                add(Gradle("2. Run Client").apply { setProperty("taskNames", listOf("runClient")) })
+                add(Gradle("3. Run Server").apply { setProperty("taskNames", listOf("runServer")) })
+                add(Gradle("4. Run Obfuscated Client").apply { setProperty("taskNames", listOf("runObfClient")) })
+                add(Gradle("5. Run Obfuscated Server").apply { setProperty("taskNames", listOf("runObfServer")) })
+                add(Gradle("6. Run Spotless Apply").apply { setProperty("taskNames", listOf("spotlessApply")) })
+                add(Gradle("7. Build Jars").apply { setProperty("taskNames", listOf("build")) })
             }
             compiler.javac {
                 afterEvaluate {
                     javacAdditionalOptions = "-encoding utf8"
-                    moduleJavacAdditionalOptions = mapOf(
-                        "${project.name}.main" to tasks.compileJava.get().options.compilerArgs.joinToString(" ") { "\"$it\"" }
-                    )
+                    moduleJavacAdditionalOptions =
+                        mapOf("${project.name}.main" to tasks.compileJava.get().options.compilerArgs.joinToString(" ") { "\"$it\"" })
                 }
             }
         }

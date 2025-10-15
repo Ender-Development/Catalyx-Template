@@ -11,20 +11,15 @@ pluginManagement {
         }
         gradlePluginPortal()
         mavenCentral()
+        google()
         mavenLocal()
     }
 }
 
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
-}
+plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0" }
 
 dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            version("kotlinVersion", settings.extra.properties["kotlin_version"].toString())
-        }
-    }
+    versionCatalogs { create("libs") { version("kotlinVersion", settings.extra.properties["kotlin_version"].toString()) } }
 }
 
 rootProject.name = rootProject.projectDir.name

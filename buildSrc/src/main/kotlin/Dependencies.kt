@@ -37,8 +37,9 @@ fun Project.loadDefaultDependencies() {
             if (propertyBoolean("use_mixinbooter")) dep("runtimeOnly", this)
         }
 
-        "compileOnlyApi"("org.jetbrains:annotations:24.1.0")
-        "annotationProcessor"("org.jetbrains:annotations:24.1.0")
+        dep("compileOnly", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
+        dep("annotationProcessor", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
+        //dep("implementation", "com.google.googlejavaformat:google-java-format:${propertyString("google_java_format_version")}")
 
         dep("patchedMinecraft", "net.minecraft:launchwrapper:1.17.2", false)
 
