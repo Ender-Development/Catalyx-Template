@@ -182,6 +182,7 @@ tasks.injectTags.configure {
 
 tasks.withType<ProcessResources> {
     // This will ensure that this task is redone when the versions change
+    inputs.property("minecraft_version", propertyString("minecraft_version"))
     inputs.property("mod_id", propertyString("mod_id"))
     inputs.property("mod_name", propertyString("mod_name"))
     inputs.property("mod_version", propertyString("mod_version"))
@@ -195,6 +196,7 @@ tasks.withType<ProcessResources> {
     // Replace various properties in mcmod.info and pack.mcmeta if applicable
     filesMatching(arrayListOf("mcmod.info", "pack.mcmeta")) {
         expand(
+            "minecraft_version" to propertyString("minecraft_version"),
             "mod_id" to propertyString("mod_id"),
             "mod_name" to propertyString("mod_name"),
             "mod_version" to propertyString("mod_version"),

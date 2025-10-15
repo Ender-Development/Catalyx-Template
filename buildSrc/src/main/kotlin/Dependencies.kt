@@ -56,7 +56,7 @@ fun Project.loadDefaultDependencies() {
         "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
 
         if (propertyBoolean("use_catalyx")) {
-            "implementation"("org.ender_development:catalyx:${propertyString("catalyx_version")}")
+            dep("implementation", "org.ender_development:catalyx:${propertyString("catalyx_version")}", false)
         }
 
         // Optional dependencies
