@@ -189,6 +189,13 @@ if (propertyBoolean("use_spotless")) {
             target("src/*/resources/**/*.json")
             gson().indentWithSpaces(2)
         }
+
+        freshmark { target("**/*.md") }
+
+        flexmark {
+            target("**/*.md")
+            flexmark(propertyString("flexmark_version"))
+        }
     }
 }
 

@@ -18,10 +18,11 @@ fun Project.loadAllProperties() {
     }
 }
 
-fun Project.getProperties(filePath: String, external: Boolean = false): Properties {
-    return PropertyLoader.getProperties(filePath, external)
-}
+fun Project.getProperties(filePath: String, external: Boolean = false): Properties =
+    PropertyLoader.getProperties(filePath, external)
 
+fun Project.getAllProperties(): Map<String, String> =
+    PropertyLoader.getAllProperties()
 
 /**
  * Checks if a property with the given name exists in the project's properties.
