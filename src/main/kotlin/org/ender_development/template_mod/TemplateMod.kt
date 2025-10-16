@@ -11,7 +11,7 @@ import org.ender_development.templatemod.Reference
     name = Reference.MOD_NAME,
     version = Reference.VERSION,
     dependencies = ICatalyxMod.CATALYX_ADDON,
-    modLanguageAdapter = ICatalyxMod.MOD_LANGUAGE_ADAPTER
+    modLanguageAdapter = ICatalyxMod.MOD_LANGUAGE_ADAPTER,
 )
 object TemplateMod : ICatalyxMod {
     override val modSettings = CatalyxSettings(Reference.MODID, CreativeTabs.MISC, this, true)

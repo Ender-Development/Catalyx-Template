@@ -11,11 +11,7 @@ import org.gradle.kotlin.dsl.dependencies
  * @param transitive Whether the dependency should be transitive. Default is true.
  * @receiver The DependencyHandler to which the dependency is added.
  */
-fun DependencyHandler.dep(
-    configuration: String,
-    notation: Any,
-    transitive: Boolean = true
-) {
+fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true) {
     PluginLogger.log("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive)")
     val dep = add(configuration, notation)
     (dep as? ModuleDependency)?.isTransitive = transitive
@@ -31,10 +27,7 @@ fun Project.loadDefaultDependencies() {
          * @param transitive Whether the dependency should be transitive. Default is true.
          * @receiver The dependency notation to add.
          */
-        fun String.dependency(
-            run: String,
-            transitive: Boolean = true
-        ) {
+        fun String.dependency(run: String, transitive: Boolean = true) {
             val presentAtRuntime = propertyBoolean(run)
             if (presentAtRuntime) {
                 dep("implementation", this, transitive)
@@ -60,7 +53,7 @@ fun Project.loadDefaultDependencies() {
         // Required dependencies
         "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
             "use_forgelincontinuous",
-            false
+            false,
         )
         "com.cleanroommc:configanytime:${propertyString("configanytime_version")}".dependency("use_configanytime")
         "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")

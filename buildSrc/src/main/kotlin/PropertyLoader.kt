@@ -7,10 +7,7 @@ import kotlin.jvm.java
 object PropertyLoader {
     private val extraProperties = mutableMapOf<String, Map<String, String>>()
 
-    internal fun loadProperties(
-        filePath: String,
-        external: Boolean = false
-    ) {
+    internal fun loadProperties(filePath: String, external: Boolean = false) {
         if (extraProperties.containsKey(filePath)) return
         val properties = getProperties(filePath, external)
         val map = properties.entries.associate { it.key.toString() to it.value.toString() }
@@ -18,20 +15,15 @@ object PropertyLoader {
         extraProperties[filePath] = map
     }
 
-    internal fun getProperties(
-        filePath: String,
-        external: Boolean
-    ): Properties =
-        when {
-            external -> loadExternal(filePath)
-            else -> loadInternal(filePath)
-        }
+    internal fun getProperties(filePath: String, external: Boolean): Properties = when {
+        external -> loadExternal(filePath)
+        else -> loadInternal(filePath)
+    }
 
     private fun loadInternal(filePath: String): Properties {
         val properties = Properties()
         val inputStream: InputStream? = this::class.java.classLoader.getResourceAsStream(filePath)
-        inputStream?.let { properties.load(it) }
-            ?: throw FileNotFoundException("Properties file '$filePath' not found in resources.")
+        inputStream?.let { properties.load(it) } ?: throw FileNotFoundException("Properties file '$filePath' not found in resources.")
         return properties
     }
 
@@ -46,10 +38,7 @@ object PropertyLoader {
         return properties
     }
 
-    internal fun getProperty(
-        filePath: String,
-        key: String
-    ): String? = extraProperties[filePath]?.get(key)
+    internal fun getProperty(filePath: String, key: String): String? = extraProperties[filePath]?.get(key)
 
     internal fun getAllProperties(): Map<String, String> = extraProperties.values.flatMap { it.entries }.associate { it.toPair() }
 }

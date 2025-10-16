@@ -1,4 +1,3 @@
-import com.diffplug.spotless.kotlin.KtfmtStep
 import org.jetbrains.gradle.ext.Gradle
 import org.jetbrains.gradle.ext.compiler
 import org.jetbrains.gradle.ext.runConfigurations
@@ -6,7 +5,6 @@ import org.jetbrains.gradle.ext.settings
 import org.jetbrains.gradle.ext.taskTriggers
 
 loadAllProperties()
-
 loadDefaultSetup()
 
 plugins {
@@ -25,44 +23,29 @@ plugins {
 }
 
 checkPropertyExists("root_package")
-
 checkPropertyExists("mod_id")
-
 propertyDefaultIfUnset("mod_name", propertyString("mod_id"))
-
 checkPropertyExists("mod_version")
-
 checkPropertyExists("minecraft_version")
-
 propertyDefaultIfUnsetWithEnvVar("minecraft_username", "DEV_USERNAME", "Developer")
 
 // Utilities
 checkSubPropertiesExist("use_tags", "tag_class_name")
-
 checkSubPropertiesExist("use_access_transformer", "access_transformer_locations")
-
 checkSubPropertiesExist("is_coremod", "coremod_includes_mod", "coremod_plugin_class_name")
 
 // Dependencies
 checkSubPropertiesExist("use_assetmover", "assetmover_version")
-
 checkSubPropertiesExist("use_catalyx", "catalyx_version")
-
 checkSubPropertiesExist("use_configanytime", "configanytime_version")
-
 checkSubPropertiesExist("use_forgelincontinuous", "forgelin_continuous_version")
-
 checkSubPropertiesExist("use_mixinbooter", "mixin_booter_version", "mixin_refmap")
-
 checkSubPropertiesExist("use_modularui", "modularui_version")
 
 // Integrations
 checkSubPropertiesExist("use_crafttweaker", "crafttweaker_version")
-
 checkSubPropertiesExist("use_groovyscript", "groovyscript_version")
-
 checkSubPropertiesExist("use_hei", "hei_version")
-
 checkSubPropertiesExist("use_top", "top_version")
 
 kotlin { jvmToolchain(8) }
@@ -100,7 +83,6 @@ minecraft {
 }
 
 loadDefaultRepositories()
-
 loadDefaultDependencies()
 
 // These are only here as I can't get RetroFuturaGradle to work in our buildSrc
@@ -150,42 +132,18 @@ if (propertyBoolean("use_spotless")) {
 
         kotlin {
             target("src/*/kotlin/**/*.kt")
-            ktfmt(propertyString("ktfmt_version")).googleStyle().configure {
-                it.setMaxWidth(140)
-                it.setBlockIndent(4)
-                it.setContinuationIndent(4)
-                it.setRemoveUnusedImports(true)
-                it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.NONE)
-            }
-
-            trimTrailingWhitespace()
-            endWithNewline()
+            ktlint(propertyString("ktlint_version"))
         }
 
         kotlinGradle {
             target("*.gradle.kts", "buildSrc/src/**/*.gradle.kts")
-            ktfmt(propertyString("ktfmt_version")).googleStyle().configure {
-                it.setMaxWidth(140)
-                it.setBlockIndent(4)
-                it.setContinuationIndent(4)
-                it.setRemoveUnusedImports(true)
-                it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.NONE)
-            }
-
-            trimTrailingWhitespace()
-            endWithNewline()
+            ktlint(propertyString("ktlint_version"))
         }
 
         java {
             target("src/*/java/**/*.java")
-
             removeUnusedImports()
-
-            trimTrailingWhitespace()
-            endWithNewline()
-
             googleJavaFormat(propertyString("google_java_format_version"))
-
             formatAnnotations()
         }
 
@@ -230,7 +188,7 @@ tasks.withType<ProcessResources> {
             "mod_credits" to propertyString("mod_credits"),
             "mod_url" to propertyString("mod_url"),
             "mod_logo_path" to propertyString("mod_logo_path"),
-            "mixin_refmap" to propertyString("mixin_refmap")
+            "mixin_refmap" to propertyString("mixin_refmap"),
         )
     }
 
