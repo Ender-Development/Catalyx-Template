@@ -152,7 +152,10 @@ if (propertyBoolean("use_spotless")) {
             gson().indentWithSpaces(2)
         }
 
-        freshmark { target("**/*.md") }
+        freshmark {
+            target("**/*.md")
+            propertiesFile("gradle.properties")
+        }
 
         flexmark {
             target("**/*.md")
@@ -283,6 +286,30 @@ idea {
                     moduleJavacAdditionalOptions =
                         mapOf("${project.name}.main" to tasks.compileJava.get().options.compilerArgs.joinToString(" ") { "\"$it\"" })
                 }
+            }
+        }
+    }
+}
+
+if (propertyBoolean("publish_to_maven")) {
+    publishing {
+        checkPropertyExists("maven_name")
+        checkPropertyExists("maven_url")
+        repositories {
+            maven {
+                name = propertyString("maven_name")
+                url = uri(propertyString("maven_url"))
+                credentials {
+                    username = SecretsManager.getOrEnvironment("MAVEN_USERNAME")
+                    password = SecretsManager.getOrEnvironment("MAVEN_PASSWORD")
+                }
+            }
+        }
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(components["java"])
+                groupId = propertyString("root_package")
+                artifactId = propertyString("mod_id")
             }
         }
     }
