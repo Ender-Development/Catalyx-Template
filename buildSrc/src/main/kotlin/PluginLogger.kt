@@ -3,6 +3,9 @@ import java.io.FileWriter
 import java.io.PrintWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import org.gradle.api.Project
+
+fun Project.log(message: String) = PluginLogger.log(message)
 
 object PluginLogger {
     private val logFile: File by lazy {

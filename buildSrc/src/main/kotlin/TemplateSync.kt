@@ -20,7 +20,7 @@ object TemplateSync {
         )
     )
 
-     data class SyncConfig(
+    data class SyncConfig(
         val keysToSync: List<String>,
         val syncAll: Boolean = false
     )

@@ -11,7 +11,11 @@ import org.gradle.kotlin.dsl.dependencies
  * @param transitive Whether the dependency should be transitive. Default is true.
  * @receiver The DependencyHandler to which the dependency is added.
  */
-fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true) {
+fun DependencyHandler.dep(
+    configuration: String,
+    notation: Any,
+    transitive: Boolean = true
+) {
     PluginLogger.log("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive)")
     val dep = add(configuration, notation)
     (dep as? ModuleDependency)?.isTransitive = transitive
@@ -27,10 +31,16 @@ fun Project.loadDefaultDependencies() {
          * @param transitive Whether the dependency should be transitive. Default is true.
          * @receiver The dependency notation to add.
          */
-        fun String.dependency(run: String, transitive: Boolean = true) {
+        fun String.dependency(
+            run: String,
+            transitive: Boolean = true
+        ) {
             val presentAtRuntime = propertyBoolean(run)
-            if (presentAtRuntime) dep("implementation", this, transitive)
-            else dep("compileOnly", this, transitive)
+            if (presentAtRuntime) {
+                dep("implementation", this, transitive)
+            } else {
+                dep("compileOnly", this, transitive)
+            }
         }
 
         fun String.requiresMixins() {
@@ -39,7 +49,6 @@ fun Project.loadDefaultDependencies() {
 
         dep("compileOnly", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
         dep("annotationProcessor", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
-        //dep("implementation", "com.google.googlejavaformat:google-java-format:${propertyString("google_java_format_version")}")
 
         dep("patchedMinecraft", "net.minecraft:launchwrapper:1.17.2", false)
 
@@ -50,7 +59,8 @@ fun Project.loadDefaultDependencies() {
 
         // Required dependencies
         "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
-            "use_forgelincontinuous", false
+            "use_forgelincontinuous",
+            false
         )
         "com.cleanroommc:configanytime:${propertyString("configanytime_version")}".dependency("use_configanytime")
         "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")

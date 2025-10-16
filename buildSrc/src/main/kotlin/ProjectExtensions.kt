@@ -18,11 +18,12 @@ fun Project.loadAllProperties() {
     }
 }
 
-fun Project.getProperties(filePath: String, external: Boolean = false): Properties =
-    PropertyLoader.getProperties(filePath, external)
+fun Project.getProperties(
+    filePath: String,
+    external: Boolean = false
+): Properties = PropertyLoader.getProperties(filePath, external)
 
-fun Project.getAllProperties(): Map<String, String> =
-    PropertyLoader.getAllProperties()
+fun Project.getAllProperties(): Map<String, String> = PropertyLoader.getAllProperties()
 
 /**
  * Checks if a property with the given name exists in the project's properties.
@@ -32,8 +33,9 @@ fun Project.getAllProperties(): Map<String, String> =
  * @throws GradleException if the property does not exist.
  */
 fun Project.checkPropertyExists(propertyName: String) {
-    if (!project.hasProperty(propertyName))
+    if (!project.hasProperty(propertyName)) {
         throw GradleException("Property '$propertyName' not found in project properties.")
+    }
 }
 
 /**
@@ -45,7 +47,10 @@ fun Project.checkPropertyExists(propertyName: String) {
  * @param subProperties The names of the sub-properties to check if the main property is true.
  * @throws GradleException if any property does not exist.
  */
-fun Project.checkSubPropertiesExist(propertyName: String, vararg subProperties: String) {
+fun Project.checkSubPropertiesExist(
+    propertyName: String,
+    vararg subProperties: String
+) {
     checkPropertyExists(propertyName)
     if (propertyBoolean(propertyName)) subProperties.forEach { checkPropertyExists(it) }
 }
@@ -124,8 +129,10 @@ fun Project.propertyString(propertyName: String): String = evalProperty(property
  * @return The value of the property as a List of Strings.
  * @throws GradleException if the property does not exist.
  */
-fun Project.propertyStringList(propertyName: String, delimiter: String = " "): MutableList<String> =
-    propertyString(propertyName).split(delimiter).filter { it.isNotEmpty() }.toMutableList()
+fun Project.propertyStringList(
+    propertyName: String,
+    delimiter: String = " "
+): MutableList<String> = propertyString(propertyName).split(delimiter).filter { it.isNotEmpty() }.toMutableList()
 
 /**
  * Retrieves the value of a property as a Boolean.
@@ -143,7 +150,10 @@ fun Project.propertyBoolean(propertyName: String): Boolean = propertyString(prop
  * @param propertyName The name of the property to check and potentially set.
  * @param defaultValue The default value to set if the property is not set or is empty.
  */
-fun Project.propertyDefaultIfUnset(propertyName: String, defaultValue: Any?) {
+fun Project.propertyDefaultIfUnset(
+    propertyName: String,
+    defaultValue: Any?
+) {
     if (!project.hasProperty(propertyName) || project.property(propertyName).toString().isEmpty()) {
         project.extensions.extraProperties.set(propertyName, defaultValue)
     }
@@ -157,7 +167,11 @@ fun Project.propertyDefaultIfUnset(propertyName: String, defaultValue: Any?) {
  * @param envVarName The name of the environment variable to check.
  * @param defaultValue The default value to set if the environment variable is not set.
  */
-fun Project.propertyDefaultIfUnsetWithEnvVar(propertyName: String, envVarName: String, defaultValue: Any?) {
+fun Project.propertyDefaultIfUnsetWithEnvVar(
+    propertyName: String,
+    envVarName: String,
+    defaultValue: Any?
+) {
     // Searches in the 'secrets.properties' first. If not found in the file, it checks the environment variables.
     // If neither is found it will return null.
     val envVarValue = SecretsManager.getOrEnvironment(envVarName)

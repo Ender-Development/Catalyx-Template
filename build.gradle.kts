@@ -1,5 +1,9 @@
-import com.diffplug.spotless.kotlin.KtfmtStep.TrailingCommaManagementStrategy
-import org.jetbrains.gradle.ext.*
+import com.diffplug.spotless.kotlin.KtfmtStep
+import org.jetbrains.gradle.ext.Gradle
+import org.jetbrains.gradle.ext.compiler
+import org.jetbrains.gradle.ext.runConfigurations
+import org.jetbrains.gradle.ext.settings
+import org.jetbrains.gradle.ext.taskTriggers
 
 loadAllProperties()
 
@@ -151,7 +155,7 @@ if (propertyBoolean("use_spotless")) {
                 it.setBlockIndent(4)
                 it.setContinuationIndent(4)
                 it.setRemoveUnusedImports(true)
-                it.setTrailingCommaManagementStrategy(TrailingCommaManagementStrategy.NONE)
+                it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.NONE)
             }
 
             trimTrailingWhitespace()
@@ -165,7 +169,7 @@ if (propertyBoolean("use_spotless")) {
                 it.setBlockIndent(4)
                 it.setContinuationIndent(4)
                 it.setRemoveUnusedImports(true)
-                it.setTrailingCommaManagementStrategy(TrailingCommaManagementStrategy.NONE)
+                it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.NONE)
             }
 
             trimTrailingWhitespace()
@@ -247,7 +251,9 @@ tasks.withType<Jar> {
                 if (currentTask[0] in validTasks) attributeMap["ForceLoadAsMod"] = "true"
             }
         }
-        if (propertyBoolean("use_access_transformer")) attributeMap["FMLAT"] = propertyString("access_transformer_locations")
+        if (propertyBoolean("use_access_transformer")) {
+            attributeMap["FMLAT"] = propertyString("access_transformer_locations")
+        }
         attributes(attributeMap)
     }
     // Add all embedded dependencies into the jar
@@ -264,6 +270,8 @@ tasks.register("catalyxAfterSync") {
 
 tasks.named("prepareObfModsFolder").configure { finalizedBy("prioritizeCoremods") }
 
+tasks.named("processIdeaSettings").configure { dependsOn("injectTags") }
+
 tasks.register("prioritizeCoremods") {
     dependsOn("prepareObfModsFolder")
     doLast {
@@ -275,6 +283,17 @@ tasks.register("prioritizeCoremods") {
     }
 }
 
+// val runTasks = listOf("runClient", "runServer", "runObfClient", "runObfServer")
+// runTasks.forEach {
+//    tasks.named(it).configure {
+//        if (propertyBoolean("is_coremod"))
+//            extraJvmArgs.add("-Dfml.coreMods.load=${modGroup}.${coreModClass}")
+//        if (it.contains("Client")) {
+//            /* GrS Stuff here to prevent server crashes */
+//        }
+//    }
+// }
+
 idea {
     module {
         inheritOutputDirs = true
@@ -285,13 +304,20 @@ idea {
         settings {
             taskTriggers { afterSync("catalyxAfterSync") }
             runConfigurations {
-                add(Gradle("1. Setup Workspace").apply { setProperty("taskNames", listOf("setupDecompWorkspace")) })
-                add(Gradle("2. Run Client").apply { setProperty("taskNames", listOf("runClient")) })
-                add(Gradle("3. Run Server").apply { setProperty("taskNames", listOf("runServer")) })
-                add(Gradle("4. Run Obfuscated Client").apply { setProperty("taskNames", listOf("runObfClient")) })
-                add(Gradle("5. Run Obfuscated Server").apply { setProperty("taskNames", listOf("runObfServer")) })
-                add(Gradle("6. Run Spotless Apply").apply { setProperty("taskNames", listOf("spotlessApply")) })
-                add(Gradle("7. Build Jars").apply { setProperty("taskNames", listOf("build")) })
+                var index = 1
+                add(Gradle("${index++}. Setup Workspace").apply { setProperty("taskNames", listOf("setupDecompWorkspace")) })
+                add(Gradle("${index++}. Run Client").apply { setProperty("taskNames", listOf("runClient")) })
+                add(Gradle("${index++}. Run Server").apply { setProperty("taskNames", listOf("runServer")) })
+                add(Gradle("${index++}. Run Obfuscated Client").apply { setProperty("taskNames", listOf("runObfClient")) })
+                add(Gradle("${index++}. Run Obfuscated Server").apply { setProperty("taskNames", listOf("runObfServer")) })
+                if (propertyBoolean("use_spotless")) {
+                    add(Gradle("${index++}. Apply Spotless").apply { setProperty("taskNames", listOf("spotlessApply")) })
+                }
+                add(Gradle("${index++}. Build Jars").apply { setProperty("taskNames", listOf("build")) })
+                if (propertyBoolean("publish_to_maven")) {
+                    add(Gradle("${index++}. Publish to Maven").apply { setProperty("taskNames", listOf("publish")) })
+                }
+                log("Added $index run configurations to the IDE")
             }
             compiler.javac {
                 afterEvaluate {
