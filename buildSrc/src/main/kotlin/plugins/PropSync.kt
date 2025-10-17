@@ -83,7 +83,6 @@ class PropSync : Plugin<Project> {
             val remoteUrl = repo.config.getString("remote", "origin", "url")
             Logger.info("Remote URL detected: $remoteUrl")
             return remoteUrl.contains("Ender-Development/Catalyx-Template")
-            return false
         }
 
         private fun isOnline(): Boolean {
