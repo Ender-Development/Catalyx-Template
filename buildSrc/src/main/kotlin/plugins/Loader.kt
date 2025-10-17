@@ -96,16 +96,14 @@ class Loader : Plugin<Project> {
          * @param propertyName The name of the property to retrieve.
          * @return The value of the property if found; otherwise, null.
          */
-        internal fun getPropertyFromFile(propertyFile: PropertyFile, propertyName: PropertyName): PropertyValue? =
-            extraProperties[propertyFile]?.get(propertyName)
+        internal fun getPropertyFromFile(propertyFile: PropertyFile, propertyName: PropertyName): PropertyValue? = extraProperties[propertyFile]?.get(propertyName)
 
         /**
          * Retrieves all loaded properties from all property files as a map of property names to property values.
          *
          * @return A map containing all loaded properties.
          */
-        private fun getAllProperties(): Map<PropertyName, PropertyValue> =
-            extraProperties.values.flatMap { it.entries }.associate { it.toPair() }
+        private fun getAllProperties(): Map<PropertyName, PropertyValue> = extraProperties.values.flatMap { it.entries }.associate { it.toPair() }
     }
 
     override fun apply(target: Project) {

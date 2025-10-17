@@ -14,8 +14,7 @@ enum class EnumProvider {
         this.shortName = shortName
     }
 
-    fun get(shortName: String) =
-        values().firstOrNull { it.shortName == shortName } ?: throw GradleException("Unknown provider short name: $shortName")
+    fun get(shortName: String) = values().firstOrNull { it.shortName == shortName } ?: throw GradleException("Unknown provider short name: $shortName")
 }
 
 @Suppress("unused")
@@ -88,23 +87,14 @@ abstract class AbstractDependency(val enabled: Boolean, private val transitive: 
     fun modDependency(): ModDependency = Pair(toString(), Pair(transitive(), changing()))
 }
 
-class Maven(val group: String, val artifact: String, val version: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) :
-    AbstractDependency(enabled, transitive, changing) {
+class Maven(val group: String, val artifact: String, val version: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
     override fun toString() = "$group:$artifact:$version"
 }
 
-class Modrinth(val projectId: String, val fileId: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) :
-    AbstractDependency(enabled, transitive, changing) {
+class Modrinth(val projectId: String, val fileId: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
     override fun toString() = "maven.modrinth:$projectId:$fileId"
 }
 
-class Curseforge(
-    val projectName: String,
-    val projectId: String,
-    val fileId: String,
-    enabled: Boolean,
-    transitive: Boolean?,
-    changing: Boolean?,
-) : AbstractDependency(enabled, transitive, changing) {
+class Curseforge(val projectName: String, val projectId: String, val fileId: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
     override fun toString() = "curse.maven:$projectName-$projectId:$fileId"
 }
