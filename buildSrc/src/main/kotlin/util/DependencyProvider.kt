@@ -18,6 +18,7 @@ enum class EnumProvider {
         values().firstOrNull { it.shortName == shortName } ?: throw GradleException("Unknown provider short name: $shortName")
 }
 
+@Suppress("unused")
 enum class EnumConfiguration {
     /**
      * If you need this for internal implementation details of the mod, but none of it is visible via the public API
