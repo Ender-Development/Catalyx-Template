@@ -16,7 +16,7 @@ class Logger : Plugin<Project> {
     companion object {
         const val LOG_PATH = "gradle/catalyx.log"
 
-        private val logFile = File(LOG_PATH)
+        private lateinit var logFile: File
 
         private fun log(message: String, level: Level = Level.INFO) {
             val timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -38,9 +38,7 @@ class Logger : Plugin<Project> {
     }
 
     override fun apply(target: Project) {
-        if (!logFile.parentFile.exists()) {
-            logFile.parentFile.mkdirs()
-        }
+        logFile = target.rootProject.file(LOG_PATH)
         if (logFile.exists()) {
             logFile.delete()
         }

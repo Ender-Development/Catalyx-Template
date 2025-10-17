@@ -61,10 +61,10 @@ class PropSync : Plugin<Project> {
         }
 
         private fun shouldDisableSync(): Boolean {
-//            if (isTemplateProject()) {
-//                Logger.info("Current project is the template project, skipping sync.")
-//                return true
-//            }
+            if (isTemplateProject()) {
+                Logger.info("Current project is the template project, skipping sync.")
+                return true
+            }
 
             if (Secrets.getOrEnvironment("SYNC_TEMPLATE")?.toBoolean() == false) {
                 Logger.info("SYNC_TEMPLATE is set to false, skipping sync.")
