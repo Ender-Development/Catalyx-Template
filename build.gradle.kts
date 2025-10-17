@@ -111,7 +111,14 @@ dependencies {
     if (propertyBoolean("use_top")) dep("implementation", top) else dep("compileOnly", (rfg.deobf(top)))
 
     // Additional dependencies
-    DepLoader.get().forEach { (enabled, entry) -> dep(if (enabled) "implementation" else "compileOnly", (rfg.deobf(entry)), false) }
+    DepLoader.get().forEach { (enabled, dependency) ->
+        dep(
+            if (enabled) "implementation" else "compileOnly",
+            (rfg.deobf(dependency.first)),
+            dependency.second.first,
+            dependency.second.second,
+        )
+    }
 }
 
 // Manage Access Transformers
