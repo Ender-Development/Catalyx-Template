@@ -134,7 +134,7 @@ if (propertyBoolean("use_spotless")) {
         encoding("UTF-8")
 
         format("misc") {
-            target(".gitignore", "**/*.properties")
+            target(".gitignore", "*.properties", "buildSrc/src/**/*.properties")
             trimTrailingWhitespace()
             endWithNewline()
         }
@@ -163,12 +163,12 @@ if (propertyBoolean("use_spotless")) {
         }
 
         freshmark {
-            target("**/*.md")
+            target(".github/**/*.md", "docs/**/*.md", "src/*/resources/**/*.md", "*.md")
             propertiesFile("gradle.properties")
         }
 
         flexmark {
-            target("**/*.md")
+            target(".github/**/*.md", "docs/**/*.md", "src/*/resources/**/*.md", "*.md")
             flexmark(propertyString("flexmark_version"))
         }
     }
