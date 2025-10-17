@@ -7,7 +7,6 @@ import plugins.DepLoader
 import plugins.Loader
 import plugins.Logger
 import plugins.Secrets
-import propertyString
 
 loadDefaultSetup()
 

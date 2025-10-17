@@ -13,7 +13,6 @@ class Secrets : Plugin<Project> {
          * Loads properties from the specified properties file located in the resources' directory.
          *
          * @param name The name of the property to load from the secrets.properties file.
-         * @throws GradleException if the property is not found and errorIfAbsent is true.
          */
         fun get(name: String) = Loader.getPropertyFromFile(PROPERTIES_FILE, name)?.toString()
 
