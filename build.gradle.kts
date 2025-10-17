@@ -214,7 +214,8 @@ tasks.withType<ProcessResources> {
     }
 
     if (propertyBoolean("use_access_transformer")) {
-        rename("(.+_at.cfg)", "META-INF/$1") // Make sure Access Transformer files are in META-INF folder
+        // Make sure Access Transformer files are in META-INF folder
+        rename("(.+_at.cfg)", "META-INF/$1")
     }
 }
 
@@ -266,7 +267,6 @@ val runTasks = listOf("runClient", "runServer", "runObfClient", "runObfServer")
 runTasks.forEach {
     tasks.named<JavaExec>(it).configure {
         if (propertyBoolean("is_coremod")) {
-            // The safe call is needed otherwise Gradle yells at me about nullability
             jvmArgs("-Dfml.coreMods.load=${propertyString("coremod_plugin_class_name")}")
         }
         if (it.contains("Client")) {
@@ -281,7 +281,6 @@ runTasks.forEach {
             groovyOptions.forEach { (prop, arg) ->
                 if (propertyBoolean(prop)) {
                     Logger.info("Adding GroovyScript option '$arg' to $it")
-                    // The safe call is needed otherwise Gradle yells at me about nullability
                     jvmArgs(arg)
                 }
             }

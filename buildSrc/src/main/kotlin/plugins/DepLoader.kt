@@ -19,6 +19,12 @@ class DepLoader : Plugin<Project> {
         private val dependencies = mutableListOf<AbstractDependency>()
         private val loadedProperties = mutableMapOf<String, MutableMap<String, String>>()
 
+        /**
+         * Groups properties by their provider and variable names.
+         *
+         * @param properties The properties to group.
+         * @param silent If true, suppresses warnings for invalid properties.
+         */
         private fun groupProperties(properties: Properties, silent: Boolean = false) {
             properties.forEach { (name, value) ->
                 name as? String ?: return@forEach Logger.warn("Invalid dependency property name: $name")
@@ -34,6 +40,10 @@ class DepLoader : Plugin<Project> {
             }
         }
 
+        /**
+         * Populates the dependencies list based on the loaded properties.
+         * The `examplemod` variable is skipped as it is just an example on how to configure a dependency.
+         */
         private fun populateDependencies() {
             loadedProperties.forEach { (key, value) ->
                 val (providerKey, variableKey) = key.split(".")
@@ -81,6 +91,13 @@ class DepLoader : Plugin<Project> {
             }
         }
 
+        /**
+         * Retrieves the map of enabled status to ModDependency instances.
+         * If dependencies have not been loaded yet, it attempts to load them from the properties file.
+         *
+         * @return A map where the key is a Boolean indicating if the dependency is enabled,
+         *         and the value is the corresponding ModDependency instance.
+         */
         fun get(): Map<Boolean, ModDependency> {
             if (dependencies.isEmpty() && File(DEPENDENCIES).exists()) {
                 val props = Loader.loadPropertyFromFile(DEPENDENCIES)
@@ -89,7 +106,7 @@ class DepLoader : Plugin<Project> {
                 populateDependencies()
                 if (dependencies.isEmpty().not()) Logger.warn("Dependencies have not been loaded until now, was the plugin not applied?")
             }
-            Logger.info("Found ${dependencies.size} external dependenc${if (dependencies.size != 1) "y" else "ies"}")
+            Logger.info("Found ${dependencies.size} external dependenc${if (dependencies.size == 1) "y" else "ies"}")
             return dependencies.associate { it.enabled to it.modDependency() }
         }
     }

@@ -44,12 +44,13 @@ enum class EnumConfiguration {
 
     /**
      *  If you want to embed this dependency into your mod jar
+     *  NOT RECOMMENDED unless you absolutely have to
      */
     EMBED("embed"),
 
     /**
      *  Special configuration for patched Minecraft dependencies
-     *  ONLY FOR INTERNAL USE. DO NOT USE THIS IN YOUR MODS.
+     *  ONLY FOR INTERNAL USE. DO NOT USE THIS IN YOUR MODS
      */
     PATCHED_MINECRAFT("patchedMinecraft"),
     ;
