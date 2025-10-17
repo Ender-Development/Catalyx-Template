@@ -14,7 +14,7 @@ import util.EnumConfiguration
  * @receiver The DependencyHandler to which the dependency is added.
  */
 fun DependencyHandler.dep(configuration: EnumConfiguration, notation: Any, transitive: Boolean = true, changing: Boolean = false) {
-    Logger.info("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive, changing=$changing)")
+    Logger.info("Adding dependency '$notation' with configuration '$configuration' (transitive=$transitive, changing=$changing)")
     val dep = add(configuration.toString(), notation)
     (dep as? ExternalModuleDependency)?.let {
         it.isTransitive = transitive

@@ -53,13 +53,14 @@ class DepLoader : Plugin<Project> {
                 val transitive = value["transitive"]?.toBoolean()
                 val changing = value["changing"]?.toBoolean()
                 val dependency = when {
-                    provider == EnumProvider.CURSEFORGE && value.keys.containsAll(
-                        listOf(
-                            "projectName",
-                            "projectId",
-                            "fileId",
-                        ),
-                    ) -> Curseforge(
+                    provider == EnumProvider.CURSEFORGE &&
+                        value.keys.containsAll(
+                            listOf(
+                                "projectName",
+                                "projectId",
+                                "fileId",
+                            ),
+                        ) -> Curseforge(
                         value["projectName"]!!,
                         value["projectId"]!!,
                         value["fileId"]!!,
