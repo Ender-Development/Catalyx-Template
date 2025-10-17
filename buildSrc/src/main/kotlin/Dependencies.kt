@@ -47,12 +47,12 @@ fun Project.loadDefaultDependencies() {
         dep("compileOnly", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
         dep("annotationProcessor", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
 
-        dep("patchedMinecraft", "net.minecraft:launchwrapper:1.17.2", false)
+        dep("patchedMinecraft", "net.minecraft:launchwrapper:${propertyString("launchwrapper_version")}", false)
 
         // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
-        "com.cleanroommc:strip-latest-forge-requirements:1.0".requiresMixins()
+        "com.cleanroommc:strip-latest-forge-requirements:${propertyString("striplatestforgerequirement_version")}".requiresMixins()
         // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
-        "com.cleanroommc:osxnarratorblocker:1.0".requiresMixins()
+        "com.cleanroommc:osxnarratorblocker:${propertyString("osxnarratorblocker_version")}".requiresMixins()
 
         // Required dependencies
         "io.github.chaosunity.forgelin:Forgelin-Continuous:${propertyString("forgelin_continuous_version")}".dependency(
