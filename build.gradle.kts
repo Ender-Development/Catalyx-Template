@@ -7,6 +7,7 @@ import plugins.DepLoader
 import plugins.Loader
 import plugins.Logger
 import plugins.Secrets
+import propertyString
 import util.EnumConfiguration
 
 loadDefaultSetup()
@@ -262,16 +263,32 @@ tasks.register("prioritizeCoremods") {
     }
 }
 
-// val runTasks = listOf("runClient", "runServer", "runObfClient", "runObfServer")
-// runTasks.forEach {
-//    tasks.named(it).configure {
-//        if (propertyBoolean("is_coremod"))
-//            extraJvmArgs.add("-Dfml.coreMods.load=${modGroup}.${coreModClass}")
-//        if (it.contains("Client")) {
-//            /* GrS Stuff here to prevent server crashes */
-//        }
-//    }
-// }
+val runTasks = listOf("runClient", "runServer", "runObfClient", "runObfServer")
+runTasks.forEach {
+    tasks.named<JavaExec>(it).configure {
+        if (propertyBoolean("is_coremod")) {
+            // The safe call is needed otherwise Gradle yells at me about nullability
+            args?.add("-Dfml.coreMods.load=${propertyString("coremod_plugin_class_name")}")
+        }
+        if (it.contains("Client")) {
+            val groovyOptions = mapOf(
+                "grs_use_examples_folder" to "-Dgroovyscript.use_examples_folder=true",
+                "grs_run_ls" to "-Dgroovyscript.run_ls=true",
+                "grs_generate_examples" to "-Dgroovyscript.generate_examples=true",
+                "grs_generate_wiki" to "-Dgroovyscript.generate_wiki=true",
+                "grs_generate_and_crash" to "-Dgroovyscript.generate_and_crash=true",
+                "grs_log_missing_lang_keys" to "-Dgroovyscript.log_missing_lang_keys=true",
+            )
+            groovyOptions.forEach { (prop, arg) ->
+                if (propertyBoolean(prop)) {
+                    Logger.info("Adding GroovyScript option '$arg' to $it")
+                    // The safe call is needed otherwise Gradle yells at me about nullability
+                    args?.add(arg)
+                }
+            }
+        }
+    }
+}
 
 idea {
     module {
