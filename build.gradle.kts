@@ -6,6 +6,7 @@ import org.jetbrains.gradle.ext.taskTriggers
 import plugins.DepLoader
 import plugins.Loader
 import plugins.Logger
+import plugins.PropSync
 import plugins.Secrets
 import util.EnumConfiguration
 
@@ -16,6 +17,7 @@ plugins {
     id("catalyx.loader")
     id("catalyx.secrets")
     id("catalyx.deploader")
+    id("catalyx.propsync")
     id("java")
     id("java-library")
     id("maven-publish")
@@ -263,6 +265,14 @@ tasks.register("prioritizeCoremods") {
     }
 }
 
+tasks.register("syncTemplate") {
+    group = "catalyx"
+    description = "Syncs the project properties with the remote template properties."
+    doLast {
+        PropSync.syncPropertiesFromTemplate()
+    }
+}
+
 val runTasks = listOf("runClient", "runServer", "runObfClient", "runObfServer")
 runTasks.forEach {
     tasks.named<JavaExec>(it).configure {
@@ -310,6 +320,9 @@ idea {
                 add(Gradle("${index++}. Build Jars").apply { setProperty("taskNames", listOf("build")) })
                 if (propertyBoolean("publish_to_maven")) {
                     add(Gradle("${index++}. Publish to Maven").apply { setProperty("taskNames", listOf("publish")) })
+                }
+                if (Secrets.getOrEnvironment("SYNC_TEMPLATE")?.toBoolean() != false) {
+                    add(Gradle("${index++}. Sync Template").apply { setProperty("taskNames", listOf("syncTemplate")) })
                 }
                 Logger.info("Added $index run configurations to the IDE")
             }

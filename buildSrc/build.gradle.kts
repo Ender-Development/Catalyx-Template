@@ -7,6 +7,10 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.4.0.202509020913-r")
+}
+
 gradlePlugin {
     plugins {
         create("secretsPlugin") {
@@ -24,6 +28,10 @@ gradlePlugin {
         create("depLoaderPlugin") {
             id = "catalyx.deploader"
             implementationClass = "plugins.DepLoader"
+        }
+        create("propSyncPlugin") {
+            id = "catalyx.propsync"
+            implementationClass = "plugins.PropSync"
         }
     }
 }
