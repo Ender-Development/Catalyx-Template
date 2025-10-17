@@ -3,6 +3,7 @@ import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.dependencies
 import plugins.Logger
+import util.EnumConfiguration
 
 /**
  * Adds a dependency to the specified configuration with an option to set its transitivity.
@@ -12,9 +13,9 @@ import plugins.Logger
  * @param transitive Whether the dependency should be transitive. Default is true.
  * @receiver The DependencyHandler to which the dependency is added.
  */
-fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true, changing: Boolean = false) {
+fun DependencyHandler.dep(configuration: EnumConfiguration, notation: Any, transitive: Boolean = true, changing: Boolean = false) {
     Logger.info("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive, changing=$changing)")
-    val dep = add(configuration, notation)
+    val dep = add(configuration.toString(), notation)
     (dep as? ExternalModuleDependency)?.let {
         it.isTransitive = transitive
         it.isChanging = changing
@@ -32,22 +33,21 @@ fun Project.loadDefaultDependencies() {
          * @receiver The dependency notation to add.
          */
         fun String.dependency(run: String, transitive: Boolean = true) {
-            val presentAtRuntime = propertyBoolean(run)
-            if (presentAtRuntime) {
-                dep("implementation", this, transitive)
+            if (propertyBoolean(run)) {
+                dep(EnumConfiguration.IMPLEMENTATION, this, transitive)
             } else {
-                dep("compileOnly", this, transitive)
+                dep(EnumConfiguration.COMPILE_ONLY, this, transitive)
             }
         }
 
         fun String.requiresMixins() {
-            if (propertyBoolean("use_mixinbooter")) dep("runtimeOnly", this)
+            if (propertyBoolean("use_mixinbooter")) dep(EnumConfiguration.RUNTIME_ONLY, this)
         }
 
-        dep("compileOnly", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
-        dep("annotationProcessor", "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
+        dep(EnumConfiguration.COMPILE_ONLY, "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
+        dep(EnumConfiguration.ANNOTATION_PROCESSOR, "org.jetbrains:annotations:${propertyString("jetbrains_annotations_version")}")
 
-        dep("patchedMinecraft", "net.minecraft:launchwrapper:${propertyString("launchwrapper_version")}", false)
+        dep(EnumConfiguration.PATCHED_MINECRAFT, "net.minecraft:launchwrapper:${propertyString("launchwrapper_version")}", false)
 
         // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
         "com.cleanroommc:strip-latest-forge-requirements:${propertyString("striplatestforgerequirement_version")}".requiresMixins()
@@ -64,7 +64,7 @@ fun Project.loadDefaultDependencies() {
         "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
 
         if (propertyBoolean("use_catalyx") && propertyString("mod_id") != "catalyx") {
-            dep("implementation", "org.ender_development:catalyx:${propertyString("catalyx_version")}", false, true)
+            dep(EnumConfiguration.IMPLEMENTATION, "org.ender_development:catalyx:${propertyString("catalyx_version")}", false, true)
         }
 
         // Optional dependencies

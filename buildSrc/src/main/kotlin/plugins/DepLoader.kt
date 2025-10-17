@@ -89,7 +89,7 @@ class DepLoader : Plugin<Project> {
                 populateDependencies()
                 if (dependencies.isEmpty().not()) Logger.warn("Dependencies have not been loaded until now, was the plugin not applied?")
             }
-            Logger.info("Found ${dependencies.size} external dependencies")
+            Logger.info("Found ${dependencies.size} external dependenc${if (dependencies.size != 1) "y" else "ies"}")
             return dependencies.associate { it.enabled to it.modDependency() }
         }
     }

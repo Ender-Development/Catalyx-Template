@@ -7,6 +7,7 @@ import plugins.DepLoader
 import plugins.Loader
 import plugins.Logger
 import plugins.Secrets
+import util.EnumConfiguration
 
 loadDefaultSetup()
 
@@ -108,12 +109,12 @@ dependencies {
 
     // TOP
     val top = "curse.maven:theonesmeagle-977883:${propertyString("top_version")}"
-    if (propertyBoolean("use_top")) dep("implementation", top) else dep("compileOnly", (rfg.deobf(top)))
+    if (propertyBoolean("use_top")) dep(EnumConfiguration.IMPLEMENTATION, top) else dep(EnumConfiguration.COMPILE_ONLY, (rfg.deobf(top)))
 
     // Additional dependencies
     DepLoader.get().forEach { (enabled, dependency) ->
         dep(
-            if (enabled) "implementation" else "compileOnly",
+            if (enabled) EnumConfiguration.IMPLEMENTATION else EnumConfiguration.COMPILE_ONLY,
             (rfg.deobf(dependency.first)),
             dependency.second.first,
             dependency.second.second,
