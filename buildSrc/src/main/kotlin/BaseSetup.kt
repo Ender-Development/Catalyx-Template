@@ -6,7 +6,6 @@ import org.gradle.jvm.toolchain.JvmVendorSpec
 import org.gradle.kotlin.dsl.buildscript
 import org.gradle.kotlin.dsl.repositories
 
-
 fun Project.loadDefaultSetup() {
     buildscript {
         repositories {
@@ -20,6 +19,7 @@ fun Project.loadDefaultSetup() {
 
     val embed = configurations.create("embed")
     configurations.getByName("implementation").extendsFrom(embed)
+    configurations.all { resolutionStrategy.cacheChangingModulesFor(0, "seconds") }
 
     group = propertyString("root_package")
     version = propertyString("mod_version")

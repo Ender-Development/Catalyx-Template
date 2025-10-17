@@ -1,26 +1,9 @@
 import groovy.lang.GroovyShell
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.internal.extensions.core.extra
-import java.util.*
-
-fun Project.loadAllProperties() {
-    PropertyLoader.loadProperties("build.properties")
-    PropertyLoader.loadProperties("dependencies.properties")
-    PropertyLoader.loadProperties("integration.properties")
-    PropertyLoader.loadProperties("publishing.properties")
-    PropertyLoader.loadProperties("utilities.properties")
-
-    PropertyLoader.loadProperties(SecretsManager.PROPERTIES_FILE, true)
-
-    PropertyLoader.getAllProperties().forEach { (key, value) ->
-        this.extra.set(key, value)
-    }
-}
-
-fun Project.getProperties(filePath: String, external: Boolean = false): Properties = PropertyLoader.getProperties(filePath, external)
-
-fun Project.getAllProperties(): Map<String, String> = PropertyLoader.getAllProperties()
+import plugins.PropertyName
+import plugins.PropertyValue
+import plugins.Secrets
 
 /**
  * Checks if a property with the given name exists in the project's properties.
@@ -29,7 +12,7 @@ fun Project.getAllProperties(): Map<String, String> = PropertyLoader.getAllPrope
  * @param propertyName The name of the property to check.
  * @throws GradleException if the property does not exist.
  */
-fun Project.checkPropertyExists(propertyName: String) {
+fun Project.checkPropertyExists(propertyName: PropertyName) {
     if (!project.hasProperty(propertyName)) {
         throw GradleException("Property '$propertyName' not found in project properties.")
     }
@@ -44,7 +27,7 @@ fun Project.checkPropertyExists(propertyName: String) {
  * @param subProperties The names of the sub-properties to check if the main property is true.
  * @throws GradleException if any property does not exist.
  */
-fun Project.checkSubPropertiesExist(propertyName: String, vararg subProperties: String) {
+fun Project.checkSubPropertiesExist(propertyName: PropertyName, vararg subProperties: PropertyName) {
     checkPropertyExists(propertyName)
     if (propertyBoolean(propertyName)) subProperties.forEach { checkPropertyExists(it) }
 }
@@ -57,7 +40,7 @@ fun Project.checkSubPropertiesExist(propertyName: String, vararg subProperties: 
  * @return The value of the property with placeholders interpolated.
  * @throws GradleException if the property does not exist.
  */
-private fun Project.evalProperty(propertyName: String): Any? {
+private fun Project.evalProperty(propertyName: PropertyName): Any? {
     checkPropertyExists(propertyName)
     val value = project.findProperty(propertyName)
     return if (value is String) evaluate(value) else value
@@ -72,7 +55,7 @@ private fun Project.evalProperty(propertyName: String): Any? {
  * @return The string with all expressions evaluated and replaced by their results.
  * @throws GradleException if an expression fails to evaluate.
  */
-fun Project.evaluate(value: String): String {
+fun Project.evaluate(value: PropertyValue): PropertyValue {
     if (value.startsWith("\${{") && value.endsWith("}}")) {
         val expression = placeHolder(value.substring(3, value.length - 2).trim())
         return try {
@@ -92,7 +75,7 @@ fun Project.evaluate(value: String): String {
  * @param value The string containing placeholders to replace.
  * @return The string with all placeholders replaced by their property values.
  */
-private fun Project.placeHolder(value: String): String {
+private fun Project.placeHolder(value: PropertyValue): PropertyValue {
     var result = value
     val template = "\\$\\{([^}]+)}".toRegex()
     template.findAll(value).forEach { matchResult ->
@@ -112,7 +95,7 @@ private fun Project.placeHolder(value: String): String {
  * @return The value of the property as a String.
  * @throws GradleException if the property does not exist.
  */
-fun Project.propertyString(propertyName: String): String = evalProperty(propertyName).toString()
+fun Project.propertyString(propertyName: PropertyName): PropertyValue = evalProperty(propertyName).toString()
 
 /**
  * Retrieves the value of a property as a List of Strings, split by the specified delimiter.
@@ -123,7 +106,7 @@ fun Project.propertyString(propertyName: String): String = evalProperty(property
  * @return The value of the property as a List of Strings.
  * @throws GradleException if the property does not exist.
  */
-fun Project.propertyStringList(propertyName: String, delimiter: String = " "): MutableList<String> =
+fun Project.propertyStringList(propertyName: PropertyName, delimiter: String = " "): MutableList<PropertyValue> =
     propertyString(propertyName).split(delimiter).filter { it.isNotEmpty() }.toMutableList()
 
 /**
@@ -134,7 +117,7 @@ fun Project.propertyStringList(propertyName: String, delimiter: String = " "): M
  * @return The value of the property as a Boolean.
  * @throws GradleException if the property does not exist.
  */
-fun Project.propertyBoolean(propertyName: String): Boolean = propertyString(propertyName).toBoolean()
+fun Project.propertyBoolean(propertyName: PropertyName): Boolean = propertyString(propertyName).toBoolean()
 
 /**
  * Sets a default value for a property if it is not already set or is empty.
@@ -142,7 +125,7 @@ fun Project.propertyBoolean(propertyName: String): Boolean = propertyString(prop
  * @param propertyName The name of the property to check and potentially set.
  * @param defaultValue The default value to set if the property is not set or is empty.
  */
-fun Project.propertyDefaultIfUnset(propertyName: String, defaultValue: Any?) {
+fun Project.propertyDefaultIfUnset(propertyName: PropertyName, defaultValue: Any?) {
     if (!project.hasProperty(propertyName) || project.property(propertyName).toString().isEmpty()) {
         project.extensions.extraProperties.set(propertyName, defaultValue)
     }
@@ -156,12 +139,11 @@ fun Project.propertyDefaultIfUnset(propertyName: String, defaultValue: Any?) {
  * @param envVarName The name of the environment variable to check.
  * @param defaultValue The default value to set if the environment variable is not set.
  */
-fun Project.propertyDefaultIfUnsetWithEnvVar(propertyName: String, envVarName: String, defaultValue: Any?) {
+fun Project.propertyDefaultIfUnsetWithEnvVar(propertyName: PropertyName, envVarName: String, defaultValue: Any?) {
     // Searches in the 'secrets.properties' first. If not found in the file, it checks the environment variables.
     // If neither is found it will return null.
-    val envVarValue = SecretsManager.getOrEnvironment(envVarName)
+    val envVarValue = Secrets.getOrEnvironment(envVarName)
     envVarValue?.let {
         project.extensions.extraProperties.set(propertyName, it)
     } ?: propertyDefaultIfUnset(propertyName, defaultValue)
-    propertyDefaultIfUnset(propertyName, defaultValue)
 }

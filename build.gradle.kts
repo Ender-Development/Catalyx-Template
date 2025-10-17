@@ -3,11 +3,19 @@ import org.jetbrains.gradle.ext.compiler
 import org.jetbrains.gradle.ext.runConfigurations
 import org.jetbrains.gradle.ext.settings
 import org.jetbrains.gradle.ext.taskTriggers
+import plugins.DepLoader
+import plugins.Loader
+import plugins.Logger
+import plugins.Secrets
+import propertyString
 
-loadAllProperties()
 loadDefaultSetup()
 
 plugins {
+    id("catalyx.logger")
+    id("catalyx.loader")
+    id("catalyx.secrets")
+    id("catalyx.deploader")
     id("java")
     id("java-library")
     id("maven-publish")
@@ -75,7 +83,7 @@ minecraft {
     extraRunJvmArguments.addAll(propertyStringList("extra_jvm_args", delimiter = ";"))
 
     if (propertyBoolean("use_tags")) {
-        val props = getProperties("tags.properties")
+        val props = Loader.loadPropertyFromFile("tags.properties")
         if (props.isNotEmpty()) {
             injectedTags.set(props.map { it.key.toString() to evaluate(it.value.toString()) }.toMap())
         }
@@ -89,10 +97,9 @@ loadDefaultDependencies()
 dependencies {
     // Mixins
     if (propertyBoolean("use_mixinbooter") || propertyBoolean("use_modularui")) {
-        val mixin =
-            modUtils
-                .enableMixins("zone.rong:mixinbooter:${propertyString("mixin_booter_version")}", propertyString("mixin_refmap"))
-                .toString()
+        val mixinBooter = "zone.rong:mixinbooter:${propertyString("mixin_booter_version")}"
+        val mixinRefMap = propertyString("mixin_refmap")
+        val mixin = modUtils.enableMixins(mixinBooter, mixinRefMap).toString()
         api(mixin) { isTransitive = false }
         annotationProcessor("org.ow2.asm:asm-debug-all:5.2")
         annotationProcessor("com.google.guava:guava:32.1.2-jre")
@@ -103,6 +110,9 @@ dependencies {
     // TOP
     val top = "curse.maven:theonesmeagle-977883:${propertyString("top_version")}"
     if (propertyBoolean("use_top")) dep("implementation", top) else dep("compileOnly", (rfg.deobf(top)))
+
+    // Additional dependencies
+    DepLoader.get().forEach { (enabled, entry) -> dep(if (enabled) "implementation" else "compileOnly", (rfg.deobf(entry)), false) }
 }
 
 // Manage Access Transformers
@@ -125,13 +135,13 @@ if (propertyBoolean("use_spotless")) {
         encoding("UTF-8")
 
         format("misc") {
-            target(".gitignore")
+            target(".gitignore", "**/*.properties")
             trimTrailingWhitespace()
             endWithNewline()
         }
 
         kotlin {
-            target("src/*/kotlin/**/*.kt")
+            target("src/*/kotlin/**/*.kt", "buildSrc/src/**/*.kt")
             ktlint(propertyString("ktlint_version"))
         }
 
@@ -143,6 +153,7 @@ if (propertyBoolean("use_spotless")) {
         java {
             target("src/*/java/**/*.java")
             removeUnusedImports()
+            forbidWildcardImports()
             googleJavaFormat(propertyString("google_java_format_version"))
             formatAnnotations()
         }
@@ -278,7 +289,7 @@ idea {
                 if (propertyBoolean("publish_to_maven")) {
                     add(Gradle("${index++}. Publish to Maven").apply { setProperty("taskNames", listOf("publish")) })
                 }
-                log("Added $index run configurations to the IDE")
+                Logger.info("Added $index run configurations to the IDE")
             }
             compiler.javac {
                 afterEvaluate {
@@ -300,8 +311,8 @@ if (propertyBoolean("publish_to_maven")) {
                 name = propertyString("maven_name")
                 url = uri(propertyString("maven_url"))
                 credentials {
-                    username = SecretsManager.getOrEnvironment("MAVEN_USERNAME")
-                    password = SecretsManager.getOrEnvironment("MAVEN_PASSWORD")
+                    username = Secrets.getOrEnvironment("MAVEN_USERNAME")
+                    password = Secrets.getOrEnvironment("MAVEN_PASSWORD")
                 }
             }
         }

@@ -1,7 +1,8 @@
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ModuleDependency
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.dependencies
+import plugins.Logger
 
 /**
  * Adds a dependency to the specified configuration with an option to set its transitivity.
@@ -11,10 +12,13 @@ import org.gradle.kotlin.dsl.dependencies
  * @param transitive Whether the dependency should be transitive. Default is true.
  * @receiver The DependencyHandler to which the dependency is added.
  */
-fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true) {
-    PluginLogger.log("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive)")
+fun DependencyHandler.dep(configuration: String, notation: Any, transitive: Boolean = true, changing: Boolean = false) {
+    Logger.info("Adding dependency '$notation' to configuration '$configuration' (transitive=$transitive, changing=$changing)")
     val dep = add(configuration, notation)
-    (dep as? ModuleDependency)?.isTransitive = transitive
+    (dep as? ExternalModuleDependency)?.let {
+        it.isTransitive = transitive
+        it.isChanging = changing
+    }
 }
 
 fun Project.loadDefaultDependencies() {
@@ -59,8 +63,8 @@ fun Project.loadDefaultDependencies() {
         "com.cleanroommc:assetmover:${propertyString("assetmover_version")}".dependency("use_assetmover")
         "com.cleanroommc:modularui:${propertyString("modularui_version")}".dependency("use_modularui", false)
 
-        if (propertyBoolean("use_catalyx")) {
-            dep("implementation", "org.ender_development:catalyx:${propertyString("catalyx_version")}", false)
+        if (propertyBoolean("use_catalyx") && propertyString("mod_id") != "catalyx") {
+            dep("implementation", "org.ender_development:catalyx:${propertyString("catalyx_version")}", false, true)
         }
 
         // Optional dependencies
