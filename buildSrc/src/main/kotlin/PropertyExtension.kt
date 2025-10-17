@@ -144,6 +144,10 @@ fun Project.propertyDefaultIfUnsetWithEnvVar(propertyName: PropertyName, envVarN
     // If neither is found it will return null.
     val envVarValue = Secrets.getOrEnvironment(envVarName)
     envVarValue?.let {
-        project.extensions.extraProperties.set(propertyName, it)
+        if (it.isNotEmpty()) {
+            project.extensions.extraProperties.set(propertyName, it)
+        } else {
+            propertyDefaultIfUnset(propertyName, defaultValue)
+        }
     } ?: propertyDefaultIfUnset(propertyName, defaultValue)
 }
