@@ -21,6 +21,7 @@ secrets.properties
 
 # other
 eclipse
+examples
 run
 .vscode
 *.log

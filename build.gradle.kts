@@ -7,7 +7,6 @@ import plugins.DepLoader
 import plugins.Loader
 import plugins.Logger
 import plugins.Secrets
-import propertyString
 import util.EnumConfiguration
 
 loadDefaultSetup()
@@ -268,7 +267,7 @@ runTasks.forEach {
     tasks.named<JavaExec>(it).configure {
         if (propertyBoolean("is_coremod")) {
             // The safe call is needed otherwise Gradle yells at me about nullability
-            args?.add("-Dfml.coreMods.load=${propertyString("coremod_plugin_class_name")}")
+            jvmArgs("-Dfml.coreMods.load=${propertyString("coremod_plugin_class_name")}")
         }
         if (it.contains("Client")) {
             val groovyOptions = mapOf(
@@ -283,7 +282,7 @@ runTasks.forEach {
                 if (propertyBoolean(prop)) {
                     Logger.info("Adding GroovyScript option '$arg' to $it")
                     // The safe call is needed otherwise Gradle yells at me about nullability
-                    args?.add(arg)
+                    jvmArgs(arg)
                 }
             }
         }
