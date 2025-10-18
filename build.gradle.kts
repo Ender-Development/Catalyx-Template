@@ -114,10 +114,11 @@ dependencies {
     if (propertyBoolean("use_top")) dep(EnumConfiguration.IMPLEMENTATION, top) else dep(EnumConfiguration.COMPILE_ONLY, (rfg.deobf(top)))
 
     // Additional dependencies
-    DepLoader.get().forEach { (enabled, dependency) ->
+    DepLoader.get().forEach { (configuration, dependency) ->
         dep(
-            if (enabled) EnumConfiguration.IMPLEMENTATION else EnumConfiguration.COMPILE_ONLY,
-            (rfg.deobf(dependency.first)),
+            configuration,
+            // Use deobfuscated version for compile-time if not runtime-only
+            if (configuration == EnumConfiguration.RUNTIME_ONLY) dependency.first else (rfg.deobf(dependency.first)),
             dependency.second.first,
             dependency.second.second,
         )
@@ -308,7 +309,7 @@ idea {
         settings {
             taskTriggers { afterSync("catalyxAfterSync") }
             runConfigurations {
-                var index = 1
+                var index = 0
                 add(Gradle("${index++}. Setup Workspace").apply { setProperty("taskNames", listOf("setupDecompWorkspace")) })
                 add(Gradle("${index++}. Run Client").apply { setProperty("taskNames", listOf("runClient")) })
                 add(Gradle("${index++}. Run Server").apply { setProperty("taskNames", listOf("runServer")) })

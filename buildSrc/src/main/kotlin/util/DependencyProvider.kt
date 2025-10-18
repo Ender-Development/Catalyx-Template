@@ -1,7 +1,5 @@
 package util
 
-import org.gradle.api.GradleException
-
 enum class EnumProvider {
     CURSEFORGE("CF"),
     MODRINTH("MR"),
@@ -13,9 +11,9 @@ enum class EnumProvider {
     constructor(shortName: String) {
         this.shortName = shortName
     }
-
-    fun get(shortName: String) = values().firstOrNull { it.shortName == shortName } ?: throw GradleException("Unknown provider short name: $shortName")
 }
+
+fun String.toProvider(): EnumProvider? = EnumProvider.values().firstOrNull { it.shortName == this }
 
 @Suppress("unused")
 enum class EnumConfiguration {
@@ -64,12 +62,14 @@ enum class EnumConfiguration {
     override fun toString() = configurationName
 }
 
+fun String.toConfiguration(): EnumConfiguration? = EnumConfiguration.values().firstOrNull { it.configurationName.lowercase().trim() == this.lowercase().trim() }
+
 typealias ModSource = String
 typealias isTransitive = Boolean
 typealias isChanging = Boolean
 typealias ModDependency = Pair<ModSource, Pair<isTransitive, isChanging>>
 
-abstract class AbstractDependency(val enabled: Boolean, private val transitive: Boolean?, private val changing: Boolean?) {
+abstract class AbstractDependency(val enabled: Boolean, private val configuration: String?, private val transitive: Boolean?, private val changing: Boolean?) {
     abstract override fun toString(): String
 
     /**
@@ -85,16 +85,20 @@ abstract class AbstractDependency(val enabled: Boolean, private val transitive: 
     fun changing(): Boolean = changing == true
 
     fun modDependency(): ModDependency = Pair(toString(), Pair(transitive(), changing()))
+
+    fun configuration(): EnumConfiguration = configuration?.toConfiguration() ?: if (enabled) EnumConfiguration.IMPLEMENTATION else EnumConfiguration.COMPILE_ONLY
 }
 
-class Maven(val group: String, val artifact: String, val version: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
+class Maven(val group: String, val artifact: String, val version: String, enabled: Boolean, configuration: String?, transitive: Boolean?, changing: Boolean?) :
+    AbstractDependency(enabled, configuration, transitive, changing) {
     override fun toString() = "$group:$artifact:$version"
 }
 
-class Modrinth(val projectId: String, val fileId: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
+class Modrinth(val projectId: String, val fileId: String, enabled: Boolean, configuration: String?, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, configuration, transitive, changing) {
     override fun toString() = "maven.modrinth:$projectId:$fileId"
 }
 
-class Curseforge(val projectName: String, val projectId: String, val fileId: String, enabled: Boolean, transitive: Boolean?, changing: Boolean?) : AbstractDependency(enabled, transitive, changing) {
+class Curseforge(val projectName: String, val projectId: String, val fileId: String, enabled: Boolean, configuration: String?, transitive: Boolean?, changing: Boolean?) :
+    AbstractDependency(enabled, configuration, transitive, changing) {
     override fun toString() = "curse.maven:$projectName-$projectId:$fileId"
 }

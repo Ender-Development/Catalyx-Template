@@ -39,6 +39,10 @@ fun Project.loadDefaultRepositories() {
             url = uri("https://maven.blamejared.com/")
         }
         maven {
+            name = "JitPack"
+            url = uri("https://jitpack.io")
+        }
+        maven {
             name = "Ender-Development Maven"
             url = uri("https://maven.ender-development.org/")
         }
