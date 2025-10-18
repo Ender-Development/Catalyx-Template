@@ -5,7 +5,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import util.AbstractDependency
 import util.Curseforge
-import util.EnumConfiguration
 import util.EnumProvider
 import util.Maven
 import util.ModDependency
@@ -101,22 +100,20 @@ class DepLoader : Plugin<Project> {
         }
 
         /**
-         * Retrieves the map of enabled status to ModDependency instances.
-         * If dependencies have not been loaded yet, it attempts to load them from the properties file.
-         *
-         * @return A map where the key is a Boolean indicating if the dependency is enabled,
-         *         and the value is the corresponding ModDependency instance.
+         * Gets the list of mod dependencies.
+         * If the dependencies list is empty, it attempts to load them from the `dependencies.properties` file.
+         * @return A list of [ModDependency] objects.
          */
-        fun get(): Map<EnumConfiguration, ModDependency> {
+        fun get(): List<ModDependency> {
             if (dependencies.isEmpty() && File(DEPENDENCIES).exists()) {
                 val props = Loader.loadPropertyFromFile(DEPENDENCIES)
-                if (props.isEmpty) return emptyMap()
+                if (props.isEmpty) return emptyList()
                 groupProperties(props)
                 populateDependencies()
                 if (dependencies.isEmpty().not()) Logger.warn("Dependencies have not been loaded until now, was the plugin not applied?")
             }
             Logger.info("Found ${dependencies.size} external dependenc${if (dependencies.size == 1) "y" else "ies"}")
-            return dependencies.associate { it.configuration() to it.modDependency() }
+            return dependencies.map { it.modDependency() }
         }
     }
 

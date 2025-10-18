@@ -74,5 +74,8 @@ fun Project.loadDefaultDependencies() {
         "CraftTweaker2:CraftTweaker2-API:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
         "CraftTweaker2:ZenScript:${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
         "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${propertyString("crafttweaker_version")}".dependency("use_crafttweaker")
+
+        // Utilities
+        dep(EnumConfiguration.RUNTIME_ONLY, "futbol.rozbrajacz:rozutils:0.4.0", false, false)
     }
 }

@@ -67,7 +67,8 @@ fun String.toConfiguration(): EnumConfiguration? = EnumConfiguration.values().fi
 typealias ModSource = String
 typealias isTransitive = Boolean
 typealias isChanging = Boolean
-typealias ModDependency = Pair<ModSource, Pair<isTransitive, isChanging>>
+
+data class ModDependency(val source: ModSource, val configuration: EnumConfiguration, val enabled: Boolean, val transitive: isTransitive, val changing: isChanging)
 
 abstract class AbstractDependency(val enabled: Boolean, private val configuration: String?, private val transitive: Boolean?, private val changing: Boolean?) {
     abstract override fun toString(): String
@@ -84,7 +85,7 @@ abstract class AbstractDependency(val enabled: Boolean, private val configuratio
      */
     fun changing(): Boolean = changing == true
 
-    fun modDependency(): ModDependency = Pair(toString(), Pair(transitive(), changing()))
+    fun modDependency(): ModDependency = ModDependency(toString(), configuration(), enabled, transitive(), changing())
 
     fun configuration(): EnumConfiguration = configuration?.toConfiguration() ?: if (enabled) EnumConfiguration.IMPLEMENTATION else EnumConfiguration.COMPILE_ONLY
 }

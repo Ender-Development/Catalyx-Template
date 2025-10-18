@@ -114,13 +114,19 @@ dependencies {
     if (propertyBoolean("use_top")) dep(EnumConfiguration.IMPLEMENTATION, top) else dep(EnumConfiguration.COMPILE_ONLY, (rfg.deobf(top)))
 
     // Additional dependencies
-    DepLoader.get().forEach { (configuration, dependency) ->
+    DepLoader.get().forEach {
+        val runtimeOnly = it.configuration == EnumConfiguration.RUNTIME_ONLY
+        if (!it.enabled && runtimeOnly) {
+            // Skip disabled runtime-only dependencies
+            Logger.info("Skipping disabled runtime-only dependency: ${it.source}")
+            return@forEach
+        }
         dep(
-            configuration,
+            it.configuration,
             // Use deobfuscated version for compile-time if not runtime-only
-            if (configuration == EnumConfiguration.RUNTIME_ONLY) dependency.first else (rfg.deobf(dependency.first)),
-            dependency.second.first,
-            dependency.second.second,
+            if (runtimeOnly) it.source else (rfg.deobf(it.source)),
+            it.transitive,
+            it.changing,
         )
     }
 }
