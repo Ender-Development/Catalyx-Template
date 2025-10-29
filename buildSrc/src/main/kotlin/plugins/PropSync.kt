@@ -147,9 +147,9 @@ class PropSync : Plugin<Project> {
 
         private fun mergeProperties(local: Properties, remote: Properties, cfg: SyncConfig): Properties {
             val merged = Properties()
-            local.forEach { key, value -> merged[key] = value }
+            local.forEach { (key, value) -> merged[key] = value }
             if (cfg.syncAll) {
-                remote.forEach { key, value ->
+                remote.forEach { (key, value) ->
                     if (local.getProperty(key.toString()) != value.toString()) {
                         Logger.info("Updating property '$key': ${local.getProperty(key.toString())} -> '$value'")
                         foundUpdate = true
@@ -212,7 +212,7 @@ class PropSync : Plugin<Project> {
                     }
                 }
                 // Add any new properties that were not in the existing file
-                properties.forEach { key, value ->
+                properties.forEach { (key, value) ->
                     if (key.toString() !in updatedKeys) {
                         lines.add("$key = $value")
                     }
@@ -220,7 +220,7 @@ class PropSync : Plugin<Project> {
             } else {
                 Logger.warn("File '${file.name}' does not exist. Creating a new one.")
                 lines.add("# Properties file created by Sync plugin on ${java.time.LocalDateTime.now()}")
-                properties.forEach { key, value ->
+                properties.forEach { (key, value) ->
                     lines.add("$key = $value")
                 }
             }

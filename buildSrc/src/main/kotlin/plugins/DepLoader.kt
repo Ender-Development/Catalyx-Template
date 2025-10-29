@@ -28,8 +28,8 @@ class DepLoader : Plugin<Project> {
          */
         private fun groupProperties(properties: Properties, silent: Boolean = false) {
             properties.forEach { (name, value) ->
-                name as? String ?: return@forEach Logger.warn("Invalid dependency property name: $name")
-                value as? String ?: return@forEach Logger.warn("Invalid dependency property value for $name: $value")
+                if (name !is String) return@forEach Logger.warn("Invalid dependency property name: $name")
+                if (value !is String) return@forEach Logger.warn("Invalid dependency property value for $name: $value")
                 val parts = name.split(".")
                 if (parts.size != 3 || EnumProvider.values().any { it.shortName == parts[0] }.not()) {
                     if (!silent) Logger.warn("Invalid dependency property format: $name")
