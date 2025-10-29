@@ -9,6 +9,8 @@ import plugins.Logger
 import plugins.PropSync
 import plugins.Secrets
 import util.EnumConfiguration
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 loadDefaultSetup()
 
@@ -156,27 +158,29 @@ if (propertyBoolean("use_spotless")) {
             endWithNewline()
         }
 
-        kotlin {
-            target("src/*/kotlin/**/*.kt", "buildSrc/src/**/*.kt")
-            ktlint(propertyString("ktlint_version"))
-        }
+        if (propertyString("editorconfig") == "spotless") {
+            kotlin {
+                target("src/*/kotlin/**/*.kt", "buildSrc/src/**/*.kt")
+                ktlint(propertyString("ktlint_version"))
+            }
 
-        kotlinGradle {
-            target("*.gradle.kts", "buildSrc/src/**/*.gradle.kts")
-            ktlint(propertyString("ktlint_version"))
-        }
+            kotlinGradle {
+                target("*.gradle.kts", "buildSrc/src/**/*.gradle.kts")
+                ktlint(propertyString("ktlint_version"))
+            }
 
-        java {
-            target("src/*/java/**/*.java")
-            removeUnusedImports()
-            forbidWildcardImports()
-            googleJavaFormat(propertyString("google_java_format_version"))
-            formatAnnotations()
-        }
+            java {
+                target("src/*/java/**/*.java")
+                removeUnusedImports()
+                forbidWildcardImports()
+                googleJavaFormat(propertyString("google_java_format_version"))
+                formatAnnotations()
+            }
 
-        json {
-            target("src/*/resources/**/*.json")
-            gson().indentWithSpaces(2)
+            json {
+                target("src/*/resources/**/*.json")
+                gson().indentWithSpaces(2)
+            }
         }
 
         freshmark {
@@ -254,7 +258,7 @@ tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
 tasks.register("catalyxAfterSync") {
     group = "catalyx"
     description = "Task that runs after the template has been synced. Can be used for custom actions."
-    dependsOn("injectTags")
+    dependsOn("injectTags", "switchEditorConfig")
 }
 
 tasks.named("prepareObfModsFolder").configure { finalizedBy("prioritizeCoremods") }
@@ -302,6 +306,28 @@ runTasks.forEach {
                 }
             }
         }
+    }
+}
+
+tasks.register("switchEditorConfig") {
+    group = "catalyx"
+    description = "Switches the .editorconfig file based on the 'editorconfig' property."
+    val spotlessEditorConfig = file("$projectDir/buildSrc/src/main/resources/.editorconfig.spotless")
+    val rozEditorConfig = file("$projectDir/buildSrc/src/main/resources/.editorconfig.roz")
+
+    val destination = file("$projectDir/.editorconfig")
+
+    doFirst {
+        val sourceFile = when (propertyString("editorconfig")) {
+            "spotless" -> spotlessEditorConfig
+            "roz" -> rozEditorConfig
+            else -> throw IllegalArgumentException("Unknown editorConfigType: ${propertyString("editorconfig")}")
+        }
+        if (!sourceFile.exists()) {
+            throw GradleException("Source .editorconfig file '${sourceFile.path}' does not exist!")
+        }
+        Logger.info("Switching .editorconfig to use '${sourceFile.name}'")
+        Files.copy(sourceFile.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
 }
 
