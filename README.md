@@ -33,6 +33,20 @@ To auto-format code, run the `Apply Spotless` gradle task or execute the `spotle
 The formatting rules aren't finalized yet as I still need to talk to roz on what the best rules are for our projects. We also recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) as IDE as it has the best Kotlin support,
 along with the [Ktlint](https://plugins.jetbrains.com/plugin/15057-ktlint) plugin to highlight formatting issues in the IDE.
 
+## Getting Started
+
+To get started with this template, follow these steps:
+- Click on the "Use this template" button above to create a new repository based on this template.
+- Clone the newly created repository to your local machine, either by using the command line or the integrated Git support in IntelliJ IDEA.
+- Open the project in IntelliJ IDEA.
+- Run the `setupDevEnvironment` gradle task to set up the development environment.
+  - **Note:** You might need to refresh the gradle project in IntelliJ IDEA if the initial task fails for whatever reason.
+  - *Optional:* Run the `spotlessApplyGitPrePushHook` gradle task to install a git pre-push hook that will format code before each push.
+- Tweak the `gradle.properties` file to your liking (e.g., set the mod name, mod id, version, etc.).
+  - **Note:** Don't forget to update the gradle project after changing the `gradle.properties` file.
+- Start coding your mod!
+  - **Note:** If you want to take full advantage of Catalyx, make sure to implement the `ICatalyxMod` interface in your main mod class.
+
 ## Contributing
 
 Please make sure to read our [contributing guidelines](.github/CONTRIBUTING.md) first.
