@@ -189,7 +189,7 @@ if (propertyBoolean("use_spotless")) {
         }
 
         flexmark {
-            target(".github/**/*.md", "docs/**/*.md", "src/*/resources/**/*.md", "*.md")
+            target(".github/**/*.md", "docs/**/*.md", "src/*/resources/**/*.md")
             flexmark(propertyString("flexmark_version"))
         }
     }
@@ -230,6 +230,10 @@ tasks.withType<ProcessResources> {
         // Make sure Access Transformer files are in META-INF folder
         rename("(.+_at.cfg)", "META-INF/$1")
     }
+}
+
+tasks.withType<Javadoc> {
+    exclude("**/package-info.java")
 }
 
 tasks.withType<Jar> {
