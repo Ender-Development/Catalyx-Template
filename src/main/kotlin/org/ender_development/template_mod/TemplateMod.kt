@@ -3,7 +3,6 @@ package org.ender_development.template_mod
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraftforge.fml.common.Mod
 import org.ender_development.catalyx.core.ICatalyxMod
-import org.ender_development.templatemod.Reference
 
 @Mod(
     modid = Reference.MODID,

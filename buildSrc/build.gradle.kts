@@ -33,5 +33,9 @@ gradlePlugin {
             id = "catalyx.propsync"
             implementationClass = "plugins.PropSync"
         }
+        create("referenceCreatorPlugin") {
+            id = "catalyx.referencecreator"
+            implementationClass = "plugins.ReferenceCreator"
+        }
     }
 }

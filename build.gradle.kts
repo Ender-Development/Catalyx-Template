@@ -4,7 +4,6 @@ import org.jetbrains.gradle.ext.runConfigurations
 import org.jetbrains.gradle.ext.settings
 import org.jetbrains.gradle.ext.taskTriggers
 import plugins.DepLoader
-import plugins.Loader
 import plugins.Logger
 import plugins.PropSync
 import plugins.Secrets
@@ -20,6 +19,7 @@ plugins {
     id("catalyx.secrets")
     id("catalyx.deploader")
     id("catalyx.propsync")
+    id("catalyx.referencecreator") apply false
     id("java")
     id("java-library")
     id("maven-publish")
@@ -42,7 +42,6 @@ checkPropertyExists("minecraft_version")
 propertyDefaultIfUnsetWithEnvVar("minecraft_username", "DEV_USERNAME", "Developer")
 
 // Utilities
-checkSubPropertiesExist("use_tags", "tag_class_name")
 checkSubPropertiesExist("use_access_transformer", "access_transformer_locations")
 checkSubPropertiesExist("is_coremod", "coremod_includes_mod", "coremod_plugin_class_name")
 
@@ -87,10 +86,7 @@ minecraft {
     extraRunJvmArguments.addAll(propertyStringList("extra_jvm_args", delimiter = ";"))
 
     if (propertyBoolean("use_tags")) {
-        val props = Loader.loadPropertyFromFile("tags.properties")
-        if (props.isNotEmpty()) {
-            injectedTags.set(props.map { it.key.toString() to evaluate(it.value.toString()) }.toMap())
-        }
+        apply(plugin = "catalyx.referencecreator")
     }
 }
 
@@ -262,12 +258,24 @@ tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
 tasks.register("catalyxAfterSync") {
     group = "catalyx"
     description = "Task that runs after the template has been synced. Can be used for custom actions."
-    dependsOn("injectTags", "switchEditorConfig")
+    dependsOn("switchEditorConfig", "catalyxReference")
+}
+
+tasks.register("catalyxReference") {
+    group = "catalyx"
+    description = "Generates the Reference.kt file from tags.properties."
+    doLast {
+        if (propertyBoolean("use_tags")) {
+            apply(plugin = "catalyx.referencecreator")
+        } else {
+            Logger.warn("Property 'use_tags' is false; skipping Reference.kt generation.")
+        }
+    }
 }
 
 tasks.named("prepareObfModsFolder").configure { finalizedBy("prioritizeCoremods") }
 
-tasks.named("processIdeaSettings").configure { dependsOn("injectTags") }
+tasks.named("processIdeaSettings").configure { dependsOn("catalyxReference") }
 
 tasks.register("prioritizeCoremods") {
     dependsOn("prepareObfModsFolder")
