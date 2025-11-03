@@ -42,6 +42,7 @@ checkPropertyExists("minecraft_version")
 propertyDefaultIfUnsetWithEnvVar("minecraft_username", "DEV_USERNAME", "Developer")
 
 // Utilities
+checkSubPropertiesExist("use_tags", "tags_package")
 checkSubPropertiesExist("use_access_transformer", "access_transformer_locations")
 checkSubPropertiesExist("is_coremod", "coremod_includes_mod", "coremod_plugin_class_name")
 

@@ -6,6 +6,7 @@ internal typealias Reference = TemplateModReference
  * Auto-generated reference object containing constants from `tags.properties`.
  * Don't change this file manually as it will be overwritten.
  */
+@Suppress("UNUSED")
 object TemplateModReference {
     const val GROOVY_VERSION = "4.0.26"
     const val CATALYX_VERSION = "0.1.0"

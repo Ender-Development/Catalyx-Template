@@ -23,17 +23,21 @@ class ReferenceCreator : Plugin<Project> {
                 appendLine(" * Auto-generated reference object containing constants from `$REFERENCE_FILE`.")
                 appendLine(" * Don't change this file manually as it will be overwritten.")
                 appendLine(" */")
+                appendLine("@Suppress(\"UNUSED\")")
                 appendLine("object ${objectName}Reference {")
                 properties.forEach { (key, value) ->
                     val eval = if (value is String) project.evaluate(value) else value
-                    appendLine("    const val ${key.toString().uppercase()} = ${if (eval.toString().all { it.isDigit() } && eval.toString().count {it == '.'} <= 1) eval else "\"$eval\""}")
+                    appendLine("    const val ${key.toString().uppercase()} = ${if (eval.toString().all { it.isDigit() } && eval.toString().count { it == '.' } <= 1) eval else "\"$eval\""}")
                 }
                 appendLine("}")
             }
-            val outputFile = "src/main/kotlin/${objectPath.replace(".", "/")}/${objectName}Reference.kt"
+            val outputFile = "src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
             val dir = File(outputFile).parentFile
             if (!dir.exists()) {
-                dir.mkdirs()
+                if (!dir.mkdirs()) {
+                    Logger.error("Failed to create directories for $outputFile")
+                    return
+                }
             }
             File(outputFile).writeText(referenceContent)
             Logger.info("Reference.kt created at $outputFile")
