@@ -192,7 +192,7 @@ if (propertyBoolean("use_spotless")) {
     }
 }
 
-tasks.injectTags.configure { outputClassName = propertyString("tag_class_name") }
+// tasks.injectTags.configure { outputClassName = propertyString("tag_class_name") }
 
 tasks.withType<ProcessResources> {
     // This will ensure that this task is redone when the versions change
