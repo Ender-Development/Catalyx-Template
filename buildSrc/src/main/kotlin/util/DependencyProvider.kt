@@ -1,22 +1,16 @@
 package util
 
-enum class EnumProvider {
+enum class EnumProvider(val shortName: String) {
     CURSEFORGE("CF"),
     MODRINTH("MR"),
     MAVEN("MV"),
     ;
-
-    val shortName: String
-
-    constructor(shortName: String) {
-        this.shortName = shortName
-    }
 }
 
 fun String.toProvider(): EnumProvider? = EnumProvider.values().firstOrNull { it.shortName == this }
 
 @Suppress("unused")
-enum class EnumConfiguration {
+enum class EnumConfiguration(val configurationName: String) {
     /**
      * If you need this for internal implementation details of the mod, but none of it is visible via the public API
      * Available at runtime but not compile time for mods depending on this mod
@@ -52,12 +46,6 @@ enum class EnumConfiguration {
      */
     PATCHED_MINECRAFT("patchedMinecraft"),
     ;
-
-    val configurationName: String
-
-    constructor(configurationName: String) {
-        this.configurationName = configurationName
-    }
 
     override fun toString() = configurationName
 }
