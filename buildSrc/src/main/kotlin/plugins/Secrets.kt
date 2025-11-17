@@ -14,7 +14,7 @@ class Secrets : Plugin<Project> {
          *
          * @param name The name of the property to load from the secrets.properties file.
          */
-        fun get(name: String) = Loader.getPropertyFromFile(PROPERTIES_FILE, name)?.toString()
+        fun get(name: String) = Loader.getPropertyFromFile(PROPERTIES_FILE, name)
 
         /**
          * Loads properties from the specified properties file located in the resources' directory.
@@ -23,7 +23,7 @@ class Secrets : Plugin<Project> {
          * @param name The name of the property to load from the secrets.properties file or environment variables.
          * @return The value of the property or environment variable, or null if not found.
          */
-        fun getOrEnvironment(name: String) = get(name) ?: System.getenv(name)?.toString()
+        fun getOrEnvironment(name: String): String? = get(name) ?: System.getenv(name)
     }
 
     override fun apply(target: Project) {
