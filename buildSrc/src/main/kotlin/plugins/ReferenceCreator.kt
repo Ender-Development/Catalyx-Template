@@ -30,7 +30,7 @@ class ReferenceCreator : Plugin<Project> {
                     appendLine("    const val ${key.toString().uppercase()} = ${if (eval.toString().all { it.isDigit() } && eval.toString().count { it == '.' } <= 1) eval else "\"$eval\""}")
                 }
                 appendLine("}")
-            }
+            }.replace("\r\n", "\n") // Normalize line endings
             val outputFile = "src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
             val dir = File(outputFile).parentFile
             if (!dir.exists()) {
