@@ -51,25 +51,24 @@ object OnlineUtils {
      * Checks if there is an active internet connection by attempting to connect to GitHub's API.
      * @return `true` if an internet connection is detected, `false` otherwise.
      */
-    fun isOnline() =
-        try {
-            val connection = URI.create(GITHUB_RAW_URL).toURL().openConnection()
-            connection.connectTimeout = CONNECTION_TIMEOUT
-            connection.readTimeout = CONNECTION_TIMEOUT
-            connection.connect()
-            connection.inputStream.close()
-            Logger.info("Internet connection detected.")
-            true
-        } catch (e: UnknownHostException) {
-            Logger.error("No internet connection: ${e.message}")
-            false
-        } catch (e: SocketTimeoutException) {
-            Logger.error("Connection timed out: ${e.message}")
-            false
-        } catch (e: Exception) {
-            Logger.error("Error checking internet connection: ${e.message}")
-            false
-        }
+    fun isOnline() = try {
+        val connection = URI.create(GITHUB_RAW_URL).toURL().openConnection()
+        connection.connectTimeout = CONNECTION_TIMEOUT
+        connection.readTimeout = CONNECTION_TIMEOUT
+        connection.connect()
+        connection.inputStream.close()
+        Logger.info("Internet connection detected.")
+        true
+    } catch (e: UnknownHostException) {
+        Logger.error("No internet connection: ${e.message}")
+        false
+    } catch (e: SocketTimeoutException) {
+        Logger.error("Connection timed out: ${e.message}")
+        false
+    } catch (e: Exception) {
+        Logger.error("Error checking internet connection: ${e.message}")
+        false
+    }
 
     /**
      * Fetches the content of a file from the specified URL.
