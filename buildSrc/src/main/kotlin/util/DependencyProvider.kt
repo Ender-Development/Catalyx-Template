@@ -4,7 +4,6 @@ enum class EnumProvider(val shortName: String) {
     CURSEFORGE("CF"),
     MODRINTH("MR"),
     MAVEN("MV"),
-    ;
 }
 
 fun String.toProvider(): EnumProvider? = EnumProvider.values().firstOrNull { it.shortName == this }
