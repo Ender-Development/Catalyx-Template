@@ -10,6 +10,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 import kotlin.io.path.writeText
 
+@Suppress("UNUSED")
 class ReferenceCreator : Plugin<Project> {
     companion object {
         const val REFERENCE_FILE = "tags.properties"
@@ -35,15 +36,14 @@ class ReferenceCreator : Plugin<Project> {
                 }
                 appendLine("}")
             }.replace("\r\n", "\n") // Normalize line endings
-            val outputPath = "src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
+            val outputPath = "${project.rootDir}/src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
             val outputFile = Path(outputPath)
-            if(outputFile.notExists()) {
+            if (outputFile.notExists()) {
                 outputFile.parent.createDirectories()
                 outputFile.createFile()
             }
-
             outputFile.writeText(referenceContent)
-            Logger.info("Reference.kt created at $outputPath")
+            Logger.info("Reference file created at ${outputPath.replace("\\", "/")}")
         }
     }
 
