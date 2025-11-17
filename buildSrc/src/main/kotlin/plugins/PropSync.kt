@@ -2,15 +2,11 @@ package plugins
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import util.OnlineUtils.CONNECTION_TIMEOUT
-import util.OnlineUtils.GITHUB_RAW_URL
-import util.OnlineUtils.TEMPLATE_BRANCH
-import util.OnlineUtils.TEMPLATE_REPO
+import util.OnlineUtils
 import util.OnlineUtils.isOnline
 import util.OnlineUtils.shouldDisableSync
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.Properties
@@ -53,13 +49,14 @@ class PropSync : Plugin<Project> {
         )
 
         fun syncPropertiesFromTemplate() {
+            Logger.banner("Searching for Properties to sync!")
             if (shouldDisableSync()) return Logger.info("Sync is disabled via system.")
             if (!isOnline()) return Logger.warn("No internet connection detected.")
             performSync()
         }
 
         private fun performSync() {
-            Logger.info("Syncing with template repository: $TEMPLATE_REPO")
+            Logger.info("Syncing with template repository: ${OnlineUtils.TEMPLATE_REPO}")
             syncConfig.forEach { (file, cfg) ->
                 try {
                     val templateProperties = fetchTemplateProperties(file)
@@ -79,21 +76,11 @@ class PropSync : Plugin<Project> {
         }
 
         private fun fetchTemplateProperties(fileName: PropertyFile): Properties {
-            val url = "$GITHUB_RAW_URL/$TEMPLATE_REPO/$TEMPLATE_BRANCH/buildSrc/src/main/resources/$fileName"
+            val url = "${OnlineUtils.GITHUB_RAW_URL}/${OnlineUtils.TEMPLATE_REPO}/${OnlineUtils.TEMPLATE_BRANCH}/buildSrc/src/main/resources/$fileName"
             val properties = Properties()
-            try {
-                val connection = URI.create(url).toURL().openConnection()
-                connection.connectTimeout = CONNECTION_TIMEOUT
-                connection.readTimeout = CONNECTION_TIMEOUT
-
-                val content = connection.getInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
-                properties.load(ByteArrayInputStream(content.toByteArray()))
-                Logger.info("Fetched template properties from '$url'")
-            } catch (e: Exception) {
-                Logger.error("Error fetching template properties from '$url': ${e.message}")
-                throw e
-            }
-
+            val content = OnlineUtils.fetchFileContent(url) ?: throw Exception("Failed to fetch content from $url")
+            properties.load(ByteArrayInputStream(content.toByteArray()))
+            Logger.info("Fetched template properties from '$url'")
             return properties
         }
 

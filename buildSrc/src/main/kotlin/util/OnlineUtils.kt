@@ -14,21 +14,29 @@ object OnlineUtils {
     const val GITHUB_RAW_URL = "https://raw.githubusercontent.com"
     const val CONNECTION_TIMEOUT = 5000 // 5 seconds
 
+    /**
+     * Determines whether synchronization with the template project should be disabled.
+     * Checks if the current project is the template project itself or if the
+     * `SYNC_TEMPLATE` environment variable is set to `false`.
+     * @return `true` if synchronization should be disabled, `false` otherwise.
+     */
     fun shouldDisableSync(): Boolean {
         if (isTemplateProject()) {
             Logger.info("Current project is the template project, skipping sync.")
             return true
         }
-
         if (Secrets.getOrEnvironment("SYNC_TEMPLATE")?.toBoolean() == false) {
             Logger.info("SYNC_TEMPLATE is set to false, skipping sync.")
             return true
         }
-
         return false
     }
 
-    fun isTemplateProject(): Boolean {
+    /**
+     * Checks if the current project is the template project by examining the Git remote URL.
+     * @return `true` if the project is the template project, `false` otherwise.
+     */
+    private fun isTemplateProject(): Boolean {
         val repo = FileRepositoryBuilder()
             .setGitDir(File(".git"))
             .readEnvironment()
@@ -39,6 +47,10 @@ object OnlineUtils {
         return remoteUrl.contains("Ender-Development/Catalyx-Template")
     }
 
+    /**
+     * Checks if there is an active internet connection by attempting to connect to GitHub's API.
+     * @return `true` if an internet connection is detected, `false` otherwise.
+     */
     fun isOnline(): Boolean {
         try {
             val connection = URI.create("https://api.github.com").toURL().openConnection()
@@ -58,5 +70,20 @@ object OnlineUtils {
             Logger.error("Error checking internet connection: ${e.message}")
             return false
         }
+    }
+
+    /**
+     * Fetches the content of a file from the specified URL.
+     * @param url The URL of the file to fetch.
+     * @return The content of the file as a String, or null if an error occurs.
+     */
+    fun fetchFileContent(url: String): String? = try {
+        val connection = URI.create(url).toURL().openConnection()
+        connection.connectTimeout = CONNECTION_TIMEOUT
+        connection.readTimeout = CONNECTION_TIMEOUT
+        connection.getInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
+    } catch (e: Exception) {
+        Logger.error("Error fetching file from '$url': ${e.message}")
+        null
     }
 }

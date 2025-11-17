@@ -6,6 +6,7 @@ import org.jetbrains.gradle.ext.taskTriggers
 import plugins.DepLoader
 import plugins.Logger
 import plugins.PropSync
+import plugins.ScriptSync
 import plugins.Secrets
 import util.EnumConfiguration
 import java.nio.file.Files
@@ -293,9 +294,10 @@ tasks.register("prioritizeCoremods") {
 
 tasks.register("syncTemplate") {
     group = "catalyx"
-    description = "Syncs the project properties with the remote template properties."
+    description = "Syncs the project properties and buildscript files with the remote template properties."
     doLast {
         PropSync.syncPropertiesFromTemplate()
+        ScriptSync.syncFilesFromTemplate()
     }
 }
 
