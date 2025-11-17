@@ -34,6 +34,7 @@ class ReferenceCreator : Plugin<Project> {
                 reference.add("    const val ${key.toString().uppercase()} = ${if (eval.all(Char::isDigit) && eval.count { it == '.' } <= 1) eval else "\"$eval\""}")
             }
             reference.add("}")
+            reference.add("")
             val outputPath = "${project.rootDir}/src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
             val outputFile = Path(outputPath)
             if (outputFile.notExists()) {
