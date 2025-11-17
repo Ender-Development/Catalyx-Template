@@ -44,33 +44,32 @@ object OnlineUtils {
             .build()
         val remoteUrl = repo.config.getString("remote", "origin", "url")
         Logger.info("Remote URL detected: $remoteUrl")
-        return remoteUrl.contains("Ender-Development/Catalyx-Template")
+        return remoteUrl.contains(TEMPLATE_REPO)
     }
 
     /**
      * Checks if there is an active internet connection by attempting to connect to GitHub's API.
      * @return `true` if an internet connection is detected, `false` otherwise.
      */
-    fun isOnline(): Boolean {
+    fun isOnline() =
         try {
-            val connection = URI.create("https://api.github.com").toURL().openConnection()
+            val connection = URI.create(GITHUB_RAW_URL).toURL().openConnection()
             connection.connectTimeout = CONNECTION_TIMEOUT
             connection.readTimeout = CONNECTION_TIMEOUT
             connection.connect()
             connection.inputStream.close()
             Logger.info("Internet connection detected.")
-            return true
+            true
         } catch (e: UnknownHostException) {
             Logger.error("No internet connection: ${e.message}")
-            return false
+            false
         } catch (e: SocketTimeoutException) {
             Logger.error("Connection timed out: ${e.message}")
-            return false
+            false
         } catch (e: Exception) {
             Logger.error("Error checking internet connection: ${e.message}")
-            return false
+            false
         }
-    }
 
     /**
      * Fetches the content of a file from the specified URL.
@@ -81,7 +80,7 @@ object OnlineUtils {
         val connection = URI.create(url).toURL().openConnection()
         connection.connectTimeout = CONNECTION_TIMEOUT
         connection.readTimeout = CONNECTION_TIMEOUT
-        connection.getInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
+        connection.getInputStream().readBytes().toString(Charsets.UTF_8)
     } catch (e: Exception) {
         Logger.error("Error fetching file from '$url': ${e.message}")
         null

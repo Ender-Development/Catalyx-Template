@@ -4,7 +4,11 @@ import evaluate
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import propertyString
-import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.notExists
+import kotlin.io.path.writeText
 
 class ReferenceCreator : Plugin<Project> {
     companion object {
@@ -12,7 +16,7 @@ class ReferenceCreator : Plugin<Project> {
 
         private fun createReference(project: Project) {
             val properties = Loader.loadPropertyFromFile(REFERENCE_FILE)
-            val objectName = project.propertyString("mod_name").filter { it.isLetterOrDigit() }
+            val objectName = project.propertyString("mod_name").filter(Char::isLetterOrDigit)
             val objectPath = "${project.propertyString("root_package")}.${project.propertyString("mod_id")}"
             val referenceContent = buildString {
                 appendLine("package $objectPath")
@@ -26,21 +30,20 @@ class ReferenceCreator : Plugin<Project> {
                 appendLine("@Suppress(\"UNUSED\")")
                 appendLine("object ${objectName}Reference {")
                 properties.forEach { (key, value) ->
-                    val eval = if (value is String) project.evaluate(value) else value
-                    appendLine("    const val ${key.toString().uppercase()} = ${if (eval.toString().all { it.isDigit() } && eval.toString().count { it == '.' } <= 1) eval else "\"$eval\""}")
+                    val eval = (if (value is String) project.evaluate(value) else value).toString()
+                    appendLine("    const val ${key.toString().uppercase()} = ${if (eval.all(Char::isDigit) && eval.count { it == '.' } <= 1) eval else "\"$eval\""}")
                 }
                 appendLine("}")
-            }.replace("\n", "\r\n") // Normalize line endings
-            val outputFile = "src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
-            val dir = File(outputFile).parentFile
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    Logger.error("Failed to create directories for $outputFile")
-                    return
-                }
+            }.replace("\r\n", "\n") // Normalize line endings
+            val outputPath = "src/main/kotlin/${project.propertyString("tags_package").replace(".", "/")}/${objectName}Reference.kt"
+            val outputFile = Path(outputPath)
+            if(outputFile.notExists()) {
+                outputFile.parent.createDirectories()
+                outputFile.createFile()
             }
-            File(outputFile).writeText(referenceContent)
-            Logger.info("Reference.kt created at $outputFile")
+
+            outputFile.writeText(referenceContent)
+            Logger.info("Reference.kt created at $outputPath")
         }
     }
 
