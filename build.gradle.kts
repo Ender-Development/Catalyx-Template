@@ -6,6 +6,7 @@ import org.jetbrains.gradle.ext.taskTriggers
 import plugins.DepLoader
 import plugins.Logger
 import plugins.PropSync
+import plugins.ScriptSync
 import plugins.Secrets
 import util.EnumConfiguration
 import java.nio.file.Files
@@ -19,6 +20,7 @@ plugins {
     id("catalyx.secrets")
     id("catalyx.deploader")
     id("catalyx.propsync")
+    id("catalyx.buildfilesync")
     id("catalyx.referencecreator") apply false
     id("java")
     id("java-library")
@@ -91,7 +93,10 @@ minecraft {
     }
 }
 
+Logger.banner("Configuring Repositories")
 loadDefaultRepositories()
+
+Logger.banner("Configuring Dependencies")
 loadDefaultDependencies()
 
 // These are only here as I can't get RetroFuturaGradle to work in our buildSrc
@@ -192,8 +197,6 @@ if (propertyBoolean("use_spotless")) {
     }
 }
 
-// tasks.injectTags.configure { outputClassName = propertyString("tag_class_name") }
-
 tasks.withType<ProcessResources> {
     // This will ensure that this task is redone when the versions change
     inputs.property("minecraft_version", propertyString("minecraft_version"))
@@ -291,9 +294,10 @@ tasks.register("prioritizeCoremods") {
 
 tasks.register("syncTemplate") {
     group = "catalyx"
-    description = "Syncs the project properties with the remote template properties."
+    description = "Syncs the project properties and buildscript files with the remote template properties."
     doLast {
         PropSync.syncPropertiesFromTemplate()
+        ScriptSync.syncFilesFromTemplate()
     }
 }
 
@@ -344,6 +348,7 @@ tasks.register("switchEditorConfig") {
     }
 }
 
+Logger.banner("Configuring IDEA")
 idea {
     module {
         inheritOutputDirs = true
