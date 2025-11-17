@@ -30,10 +30,13 @@ class Logger : Plugin<Project> {
         fun error(message: String) = log(message, Level.ERROR)
 
         fun greet(plugin: Plugin<Project>) {
-            val msg = "Applying ${plugin::class.simpleName} plugin!"
-            info("=".repeat(msg.length + 4))
-            info("= $msg =")
-            info("=".repeat(msg.length + 4))
+            banner("Applying ${plugin::class.simpleName} plugin!")
+        }
+
+        fun banner(message: String) {
+            info("=".repeat(message.length + 4))
+            info("= $message =")
+            info("=".repeat(message.length + 4))
         }
     }
 

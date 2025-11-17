@@ -19,6 +19,7 @@ plugins {
     id("catalyx.secrets")
     id("catalyx.deploader")
     id("catalyx.propsync")
+    id("catalyx.buildfilesync")
     id("catalyx.referencecreator") apply false
     id("java")
     id("java-library")
@@ -91,7 +92,10 @@ minecraft {
     }
 }
 
+Logger.banner("Configuring Repositories")
 loadDefaultRepositories()
+
+Logger.banner("Configuring Dependencies")
 loadDefaultDependencies()
 
 // These are only here as I can't get RetroFuturaGradle to work in our buildSrc
@@ -191,8 +195,6 @@ if (propertyBoolean("use_spotless")) {
         }
     }
 }
-
-// tasks.injectTags.configure { outputClassName = propertyString("tag_class_name") }
 
 tasks.withType<ProcessResources> {
     // This will ensure that this task is redone when the versions change
@@ -344,6 +346,7 @@ tasks.register("switchEditorConfig") {
     }
 }
 
+Logger.banner("Configuring IDEA")
 idea {
     module {
         inheritOutputDirs = true
