@@ -46,6 +46,7 @@ class DepLoader : Plugin<Project> {
          * The `examplemod` variable is skipped as it is just an example on how to configure a dependency.
          */
         private fun populateDependencies() {
+            dependencies.clear()
             loadedProperties.forEach { (key, value) ->
                 val (providerKey, variableKey) = key.split(".")
                 val provider = providerKey.toProvider()
