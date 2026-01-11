@@ -8,13 +8,14 @@ class Secrets : Plugin<Project> {
     companion object {
         const val PROPERTIES_FILE = "secrets.properties"
         const val EXAMPLE_FILE = "secrets.example.properties"
+        private var secretsFile = ""
 
         /**
          * Loads properties from the specified properties file located in the resources' directory.
          *
          * @param name The name of the property to load from the secrets.properties file.
          */
-        fun get(name: String) = Loader.getPropertyFromFile(PROPERTIES_FILE, name)
+        operator fun get(name: String) = Loader.getPropertyFromFile(secretsFile, name)
 
         /**
          * Loads properties from the specified properties file located in the resources' directory.
@@ -27,41 +28,37 @@ class Secrets : Plugin<Project> {
     }
 
     override fun apply(target: Project) {
-	    Logger.greet(this)
+        Logger.greet(this)
 
-	    val rootSecrets = target.rootProject.file(PROPERTIES_FILE)
-	    val userSecrets = File(
-		    System.getProperty("user.home"),
-		    ".gradle/$PROPERTIES_FILE"
-	    )
-	    // Searches for PROPERTIES_FILE in ~/.gradle/
-	    //     -> No need to store secrets inside the repo tree anymore BECAUSE IT IS FCKN DANGEROUS!
-	    //        Even with .gitignore!
-	    //        Thx, Klebi <3
+        val rootSecrets = target.rootProject.file(PROPERTIES_FILE)
+        val userSecrets = File(
+            System.getProperty("user.home"),
+            ".gradle/$PROPERTIES_FILE"
+        )
 
+        val secretsFile = when {
+            rootSecrets.exists() -> {
+                if (!getOrEnvironment("DISMISS_SECRET_FILE_WARNING").toBoolean()) {
+                    Logger.warn("Don't store secrets inside the repo tree BECAUSE IT IS FCKN DANGEROUS!")
+                }
+                rootSecrets
+            }
+            userSecrets.exists() -> userSecrets
+            else -> null
+        }
 
-	    val secretsFile = when {
-		    rootSecrets.exists() -> {
-			    if (!getOrEnvironment("DISMISS_SECRET_FILE_WARNING").toBoolean()) {
-				    Logger.warn("Don't store secrets inside the repo tree BECAUSE IT IS FCKN DANGEROUS!")
-			    }
-				rootSecrets
-		    }
-		    userSecrets.exists() -> userSecrets
-		    else -> null
-	    }
+        if (secretsFile == null) {
+            if (target.rootProject.file(EXAMPLE_FILE).exists()) {
+                Logger.warn("No '$PROPERTIES_FILE' found. Please create one in project root or even better in ~/.gradle based on '$EXAMPLE_FILE'.")
 
-	    if (secretsFile == null) {
-		    if (target.rootProject.file(EXAMPLE_FILE).exists()) {
-			    Logger.warn("No '$PROPERTIES_FILE' found. Please create one in project root or even better in ~/.gradle based on '$EXAMPLE_FILE'.")
+                // Needed?
+                //println("WARNING: No '$PROPERTIES_FILE' found in project root or ~/.gradle. Please create one based on '$EXAMPLE_FILE'.")
+            }
+            return
+        }
 
-				// Needed?
-				//println("WARNING: No '$PROPERTIES_FILE' found in project root or ~/.gradle. Please create one based on '$EXAMPLE_FILE'.")
-		    }
-		    return
-	    }
-
-	    Logger.info("Loading secrets from: ${secretsFile.absolutePath}")
-	    Loader.loadPropertyFile(secretsFile.absolutePath)
+        Logger.info("Loading secrets from: ${secretsFile.absolutePath}")
+        Loader.loadPropertyFile(secretsFile.absolutePath)
+        Companion.secretsFile = secretsFile.absolutePath
     }
 }
