@@ -18,8 +18,7 @@ class ReferenceCreator : Plugin<Project> {
         private fun createReference(project: Project) {
             val properties = Loader.loadPropertyFromFile(REFERENCE_FILE)
             val objectName = project.propertyString("mod_name").filter(Char::isLetterOrDigit)
-            val objectPath = "${project.propertyString("root_package")}.${project.propertyString("mod_id")}"
-            val reference = arrayListOf("package $objectPath")
+            val reference = arrayListOf("package ${project.propertyString("tags_package")}")
             reference.add("")
             reference.add("internal typealias Reference = ${objectName}Reference")
             reference.add("")
