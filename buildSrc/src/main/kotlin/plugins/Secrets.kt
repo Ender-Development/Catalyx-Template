@@ -38,27 +38,23 @@ class Secrets : Plugin<Project> {
 
         val secretsFile = when {
             rootSecrets.exists() -> {
-                if (!getOrEnvironment("DISMISS_SECRET_FILE_WARNING").toBoolean()) {
-                    Logger.warn("Don't store secrets inside the repo tree BECAUSE IT IS FCKN DANGEROUS!")
+                if (System.getenv("DISMISS_SECRET_FILE_WARNING") == null) {
+                    Logger.warn("Keeping the secrets file in the project root can have security implications, as such moving the '$PROPERTIES_FILE' to ~/.gradle would be recommended. Set the DISMISS_SECRET_FILE_WARNING environment variable to disable this warning at your own risk.")
                 }
                 rootSecrets
             }
             userSecrets.exists() -> userSecrets
-            else -> null
-        }
+            else -> {
+                if (target.rootProject.file(EXAMPLE_FILE).exists()) {
+                    Logger.warn("No '$PROPERTIES_FILE' found, please create one in ~/.gradle, or in the project root, based on '$EXAMPLE_FILE'.")
+                }
 
-        if (secretsFile == null) {
-            if (target.rootProject.file(EXAMPLE_FILE).exists()) {
-                Logger.warn("No '$PROPERTIES_FILE' found. Please create one in project root or even better in ~/.gradle based on '$EXAMPLE_FILE'.")
-
-                // Needed?
-                //println("WARNING: No '$PROPERTIES_FILE' found in project root or ~/.gradle. Please create one based on '$EXAMPLE_FILE'.")
+                return
             }
-            return
         }
 
+        Companion.secretsFile = secretsFile.absolutePath
         Logger.info("Loading secrets from: ${secretsFile.absolutePath}")
         Loader.loadPropertyFile(secretsFile.absolutePath)
-        Companion.secretsFile = secretsFile.absolutePath
     }
 }
