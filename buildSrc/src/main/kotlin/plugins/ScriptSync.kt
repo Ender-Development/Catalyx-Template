@@ -10,6 +10,7 @@ class ScriptSync : Plugin<Project> {
 
         private val syncScripts: List<String> = listOf(
             "buildSrc/src/main/kotlin/plugins/DepLoader.kt",
+            "buildSrc/src/main/kotlin/plugins/IJScopeCreator.kt",
             "buildSrc/src/main/kotlin/plugins/Loader.kt",
             "buildSrc/src/main/kotlin/plugins/Logger.kt",
             "buildSrc/src/main/kotlin/plugins/PropSync.kt",

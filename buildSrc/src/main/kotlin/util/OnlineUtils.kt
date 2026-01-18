@@ -36,7 +36,7 @@ object OnlineUtils {
      * Checks if the current project is the template project by examining the Git remote URL.
      * @return `true` if the project is the template project, `false` otherwise.
      */
-    private fun isTemplateProject(): Boolean {
+    fun isTemplateProject(): Boolean {
         val repo = FileRepositoryBuilder()
             .setGitDir(File(".git"))
             .readEnvironment()

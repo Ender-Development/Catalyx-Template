@@ -41,5 +41,9 @@ gradlePlugin {
             id = "catalyx.referencecreator"
             implementationClass = "plugins.ReferenceCreator"
         }
+        create("ijScopeCreatorPlugin") {
+            id = "catalyx.ijscopecreator"
+            implementationClass = "plugins.IJScopeCreator"
+        }
     }
 }

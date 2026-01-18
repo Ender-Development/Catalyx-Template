@@ -22,6 +22,7 @@ plugins {
     id("catalyx.propsync")
     id("catalyx.buildfilesync")
     id("catalyx.referencecreator") apply false
+    id("catalyx.ijscopecreator")
     id("java")
     id("java-library")
     id("maven-publish")

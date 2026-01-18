@@ -31,8 +31,8 @@ class ReferenceCreator : Plugin<Project> {
                 appendLine("@Suppress(\"UNUSED\")")
                 appendLine("object ${objectName}Reference {")
                 properties.forEach { (key, value) ->
-                    val eval = (if(value is String) project.evaluate(value) else value).toString()
-                    val value = if(eval.toDoubleOrNull() != null) eval else "\"${eval.replace("\"", "\\\"")}\""
+                    val eval = (if (value is String) project.evaluate(value) else value).toString()
+                    val value = if (eval.toDoubleOrNull() != null) eval else "\"${eval.replace("\"", "\\\"")}\""
                     // TODO: instead of hardcoding 4-space indent, could probably read .editorconfig and just check
                     appendLine("    const val $key = $value")
                 }
