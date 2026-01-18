@@ -3,8 +3,6 @@ package plugins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import util.OnlineUtils
-import util.OnlineUtils.isOnline
-import util.OnlineUtils.shouldDisableSync
 
 class ScriptSync : Plugin<Project> {
     companion object {
@@ -31,8 +29,8 @@ class ScriptSync : Plugin<Project> {
 
         fun syncFilesFromTemplate() {
             Logger.banner("Searching for Files to sync!")
-            if (shouldDisableSync()) return Logger.info("Sync is disabled via system.")
-            if (!isOnline()) return Logger.warn("No internet connection detected.")
+            if (OnlineUtils.shouldDisableSync()) return Logger.info("Sync is disabled via system.")
+            if (!OnlineUtils.isOnline()) return Logger.warn("No internet connection detected.")
             performSync()
         }
 

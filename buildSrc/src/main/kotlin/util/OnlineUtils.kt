@@ -79,7 +79,7 @@ object OnlineUtils {
         val connection = URI.create(url).toURL().openConnection()
         connection.connectTimeout = CONNECTION_TIMEOUT
         connection.readTimeout = CONNECTION_TIMEOUT
-        connection.getInputStream().readBytes().toString(Charsets.UTF_8)
+        connection.inputStream.use { it.readBytes().toString(Charsets.UTF_8) }
     } catch (e: Exception) {
         Logger.error("Error fetching file from '$url': ${e.message}")
         null
