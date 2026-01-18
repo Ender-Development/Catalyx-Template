@@ -135,6 +135,7 @@ class PropSync : Plugin<Project> {
                 existingLines.forEach {
                     when {
                         it.startsWith("#") || it.trim().isEmpty() -> lines.add(it)
+
                         it.contains("=") -> {
                             val key = it.substringBefore("=").trim()
                             val newValue = properties.getProperty(key)
@@ -147,6 +148,7 @@ class PropSync : Plugin<Project> {
                                 updatedKeys.add(key)
                             } ?: lines.add(it) // Keep existing line if key not in new properties
                         }
+
                         else -> lines.add(it)
                     }
                 }
