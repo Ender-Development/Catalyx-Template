@@ -15,10 +15,56 @@ class ReferenceCreator : Plugin<Project> {
     companion object {
         const val REFERENCE_FILE = "tags.properties"
 
+        /**
+         * Guesses the indent style based on the .editorconfig file used.
+         *
+         * If the .editorconfig file is not present, or the required values cannot be found, the default 4-space indent is returned instead.
+         */
+        fun guessIndent(project: Project): String {
+            val editorconfig = project.file(".editorconfig")
+            if (!editorconfig.exists()) {
+                return "    "
+            }
+
+            var indentStyle = ""
+            var indentSize = -1
+
+            // this is crude and doesn't parse everything per spec https://spec.editorconfig.org/, but it's good enough
+            editorconfig.useLines { lines ->
+                for (line in lines) {
+                    val line = line.trim()
+                    if (line.startsWith("indent_size", true)) {
+                        indentSize = line.substringAfter('=').trim().toIntOrNull() ?: -1
+                        if (indentStyle == "") {
+                            continue
+                        } else {
+                            break
+                        }
+                    }
+
+                    if (line.startsWith("indent_style", true)) {
+                        indentStyle = line.substringAfter('=').trim()
+                        if (indentSize == -1) {
+                            continue
+                        } else {
+                            break
+                        }
+                    }
+                }
+            }
+
+            return when (indentStyle) {
+                "tab" -> "\t"
+                "space" -> " ".repeat(if (indentSize == -1) 4 else indentSize)
+                else -> "    "
+            }
+        }
+
         private fun createReference(project: Project) {
             val properties = Loader.loadPropertyFromFile(REFERENCE_FILE)
             val objectName = project.propertyString("mod_name").filter(Char::isLetterOrDigit)
             val objectPath = project.propertyString("tags_package")
+            val indent = guessIndent(project)
             val reference = buildString {
                 appendLine("package $objectPath")
                 appendLine("")
@@ -33,8 +79,7 @@ class ReferenceCreator : Plugin<Project> {
                 properties.forEach { (key, value) ->
                     val eval = (if (value is String) project.evaluate(value) else value).toString()
                     val value = if (eval.toDoubleOrNull() != null) eval else "\"${eval.replace("\"", "\\\"")}\""
-                    // TODO: instead of hardcoding 4-space indent, could probably read .editorconfig and just check
-                    appendLine("    const val $key = $value")
+                    appendLine("${indent}const val $key = $value")
                 }
                 appendLine("}")
             }
