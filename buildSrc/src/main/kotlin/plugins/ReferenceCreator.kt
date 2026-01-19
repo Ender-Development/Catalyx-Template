@@ -53,9 +53,9 @@ class ReferenceCreator : Plugin<Project> {
                 }
             }
 
-            return when (indentStyle) {
-                "tab" -> "\t"
-                "space" -> " ".repeat(if (indentSize == -1) 4 else indentSize)
+            return when {
+                indentStyle.equals("tab", true) -> "\t"
+                indentStyle.equals("space", true) -> " ".repeat(if (indentSize == -1) 4 else indentSize)
                 else -> "    "
             }
         }
