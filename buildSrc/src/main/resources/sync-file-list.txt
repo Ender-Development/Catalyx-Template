@@ -13,5 +13,6 @@ buildSrc/src/main/kotlin/Dependencies.kt
 buildSrc/src/main/kotlin/PropertyExtension.kt
 buildSrc/src/main/kotlin/Repositories.kt
 buildSrc/build.gradle.kts
+buildSrc/CHANGELOG.md
 build.gradle.kts
 settings.gradle.kts
