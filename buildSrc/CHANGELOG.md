@@ -5,6 +5,14 @@ Writing a changelog is a good practice for maintaining a clear history of change
 Try to follow the [Common Changelog](https://common-changelog.org/) conventions.
 -->
 
+## [0.5.1] - 2026-01-26
+
+_this is fine._
+
+- update dependencies
+- enable a few experimental kotlin features
+- experimental: sync kotlin version from template
+
 ## [0.5.0] - 2026-01-19
 
 _Happy new year._

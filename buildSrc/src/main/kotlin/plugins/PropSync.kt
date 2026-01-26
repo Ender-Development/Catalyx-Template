@@ -12,7 +12,7 @@ import java.nio.file.StandardCopyOption
 import java.util.Properties
 
 class PropSync : Plugin<Project> {
-    data class SyncConfig(val keysToSync: List<String> = emptyList(), val syncAll: Boolean = false)
+    data class SyncConfig(val keysToSync: List<String> = emptyList(), val syncAll: Boolean = false, val path: String = "buildSrc/src/main/resources/")
 
     companion object {
         private var foundUpdate = false
@@ -46,6 +46,11 @@ class PropSync : Plugin<Project> {
             "tags.properties" to SyncConfig(
                 syncAll = true,
             ),
+            // This one is new, still needs to be tested
+            "gradle.properties" to SyncConfig(
+                keysToSync = listOf("kotlin_version"),
+                path = "",
+            ),
         )
 
         fun syncPropertiesFromTemplate() {
@@ -59,12 +64,12 @@ class PropSync : Plugin<Project> {
             Logger.info("Syncing with template repository: ${OnlineUtils.TEMPLATE_REPO}")
             syncConfig.forEach { (file, cfg) ->
                 try {
-                    val templateProperties = fetchTemplateProperties(file)
+                    val templateProperties = fetchTemplateProperties(file, cfg.path)
                     val localProperties = Loader.loadPropertyFromFile(file)
 
                     val mergedProperties = mergeProperties(localProperties, templateProperties, cfg)
                     if (foundUpdate) {
-                        updateLocalPropertiesFile(file, mergedProperties)
+                        updateLocalPropertiesFile(cfg.path, file, mergedProperties)
                         Logger.info("Synchronized properties for '$file'")
                     } else {
                         Logger.info("No changes detected for '$file'")
@@ -75,8 +80,8 @@ class PropSync : Plugin<Project> {
             }
         }
 
-        private fun fetchTemplateProperties(fileName: PropertyFile): Properties {
-            val url = "${OnlineUtils.GITHUB_RAW_URL}/${OnlineUtils.TEMPLATE_REPO}/${OnlineUtils.TEMPLATE_BRANCH}/buildSrc/src/main/resources/$fileName"
+        private fun fetchTemplateProperties(fileName: PropertyFile, path: String): Properties {
+            val url = "${OnlineUtils.GITHUB_RAW_URL}/${OnlineUtils.TEMPLATE_REPO}/${OnlineUtils.TEMPLATE_BRANCH}/$path$fileName"
             val properties = Properties()
             val content = OnlineUtils.fetchFileContent(url) ?: throw Exception("Failed to fetch content from $url")
             properties.load(ByteArrayInputStream(content.toByteArray()))
@@ -110,8 +115,8 @@ class PropSync : Plugin<Project> {
             return merged
         }
 
-        private fun updateLocalPropertiesFile(fileName: PropertyFile, properties: Properties) {
-            val buildSrcDirectory = project.rootProject.file("buildSrc/src/main/resources")
+        private fun updateLocalPropertiesFile(path: String, fileName: PropertyFile, properties: Properties) {
+            val buildSrcDirectory = project.rootProject.file(path.removeSuffix("/"))
             val propertyFile = File(buildSrcDirectory, fileName)
             if (propertyFile.exists().not()) {
                 return Logger.warn("Property file '$fileName' does not exist at ${propertyFile.absolutePath}, skipping update.")
