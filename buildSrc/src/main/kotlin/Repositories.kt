@@ -9,7 +9,8 @@ fun Project.loadDefaultRepositories() {
             name = "GTNH Maven"
             url = uri("https://nexus.gtnewhorizons.com/repository/public/")
         }
-        // JitPack is a novel package repository for JVM and Android projects. It builds Git projects on demand and provides you with ready-to-use artifacts (jar, aar).
+        // JitPack is a novel package repository for JVM and Android projects.
+        // It builds Git projects on demand and provides you with ready-to-use artifacts (jar, aar).
         // Docs: https://docs.jitpack.io/
         maven {
             name = "JitPack"
@@ -96,7 +97,7 @@ fun Project.loadDefaultRepositories() {
         }
         // Large collection of mods from various authors, curseforge maven precursor
         maven {
-            name "ModMaven"
+            name = "ModMaven"
             url = uri("https://modmaven.dev/")
         }
         mavenLocal() // Must be last for caching to work

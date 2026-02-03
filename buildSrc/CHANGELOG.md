@@ -5,6 +5,13 @@ Writing a changelog is a good practice for maintaining a clear history of change
 Try to follow the [Common Changelog](https://common-changelog.org/) conventions.
 -->
 
+## [0.5.2] - 2026-02-03
+
+_general maintenance._
+
+- update dependencies
+- add a few more mavens
+
 ## [0.5.1] - 2026-01-26
 
 _this is fine._
