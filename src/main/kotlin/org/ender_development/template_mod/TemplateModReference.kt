@@ -20,7 +20,7 @@ object TemplateModReference {
     const val AUTHOR = "Ender-Development"
     const val CONFIGANYTIME_VERSION = 3.0
     const val THEONEPROBE_VERSION = 7095096
-    const val MODULARUI_VERSION = "3.0.8"
+    const val MODULARUI_VERSION = "3.1.0"
     const val FORGELIN_VERSION = "2.3.0.0"
     const val VERSION = "0.1.0"
     const val HADENOUGHITEMS_VERSION = "4.29.15"
