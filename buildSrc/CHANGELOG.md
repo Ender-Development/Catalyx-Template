@@ -5,6 +5,12 @@ Writing a changelog is a good practice for maintaining a clear history of change
 Try to follow the [Common Changelog](https://common-changelog.org/) conventions.
 -->
 
+## [0.5.3] - 2026-04-16
+
+_sorry for the break._
+
+- updated dependencies
+
 ## [0.5.2] - 2026-02-03
 
 _general maintenance._
