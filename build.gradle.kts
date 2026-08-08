@@ -28,7 +28,7 @@ plugins {
     id("maven-publish")
     kotlin("jvm") version libs.versions.kotlinVersion
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
-    id("com.gtnewhorizons.retrofuturagradle") version "1.4.1"
+    id("com.gtnewhorizons.retrofuturagradle") version "1.4.9"
     id("org.jetbrains.changelog") version "2.2.1"
     // Publishing
     id("com.matthewprenger.cursegradle") version "1.4.0" apply false
