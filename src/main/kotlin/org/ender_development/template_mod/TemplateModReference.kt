@@ -15,14 +15,14 @@ object TemplateModReference {
     const val MOD_NAME = "Template Mod"
     const val CRAFTTWEAKER_VERSION = "4.1.20.711"
     const val KOTLIN_LANGUAGE_ADAPTER = "io.github.chaosunity.forgelin.KotlinAdapter"
-    const val KOTLIN_VERSION = "2.3.20"
-    const val MIXINBOOTER_VERSION = 10.7
+    const val KOTLIN_VERSION = "2.4.10"
+    const val MIXINBOOTER_VERSION = 11.16
     const val AUTHOR = "Ender-Development"
     const val CONFIGANYTIME_VERSION = 3.0
     const val THEONEPROBE_VERSION = 7095096
     const val MODULARUI_VERSION = "3.1.6"
-    const val FORGELIN_VERSION = "2.3.20.0"
+    const val FORGELIN_VERSION = "2.4.10.0"
     const val VERSION = "0.1.0"
-    const val HADENOUGHITEMS_VERSION = "4.30.2"
+    const val HADENOUGHITEMS_VERSION = "4.34.3"
     const val MODID = "template_mod"
 }
