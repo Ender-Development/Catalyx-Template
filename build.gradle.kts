@@ -257,6 +257,9 @@ tasks.withType<Jar> {
         if (propertyBoolean("use_access_transformer")) {
             attributeMap["FMLAT"] = propertyString("access_transformer_locations")
         }
+        if (propertyBoolean("use_mixinbooter")) {
+            attributeMap["MixinConnector"] = propertyString("mixin_connector_class")
+        }
         attributes(attributeMap)
     }
     // Add all embedded dependencies into the jar

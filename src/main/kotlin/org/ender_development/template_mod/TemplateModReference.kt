@@ -16,7 +16,7 @@ object TemplateModReference {
     const val CRAFTTWEAKER_VERSION = "4.1.20.711"
     const val KOTLIN_LANGUAGE_ADAPTER = "io.github.chaosunity.forgelin.KotlinAdapter"
     const val KOTLIN_VERSION = "2.4.10"
-    const val MIXINBOOTER_VERSION = 11.16
+    const val MIXINBOOTER_VERSION = 11.17
     const val AUTHOR = "Ender-Development"
     const val CONFIGANYTIME_VERSION = 3.0
     const val THEONEPROBE_VERSION = 7095096
