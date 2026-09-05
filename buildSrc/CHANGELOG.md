@@ -5,6 +5,15 @@ Writing a changelog is a good practice for maintaining a clear history of change
 Try to follow the [Common Changelog](https://common-changelog.org/) conventions.
 -->
 
+## [0.6.0] - 2026-09-05
+
+_What is even going on with RFG?_
+
+- updated kotlin and removed experimental features
+- updated RFG to last stable 1.4.x version (adapting 2.x.x will require major refactor)
+- updated MixinBooter to 11.x and adapting latest changes, added examples
+- updated dependencies
+
 ## [0.5.3] - 2026-04-16
 
 _sorry for the break._

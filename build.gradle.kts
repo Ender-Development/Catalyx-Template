@@ -251,13 +251,13 @@ tasks.withType<Jar> {
                 attributeMap["FMLCorePluginContainsFMLMod"] = "true"
                 val currentTask = gradle.startParameter.taskNames
                 val validTasks = arrayOf("build", "prepareObfModsFolder", "runObfClient")
-                if (!currentTask.isEmpty() && currentTask[0] in validTasks) attributeMap["ForceLoadAsMod"] = "true"
+                if (currentTask.isNotEmpty() && currentTask[0] in validTasks) attributeMap["ForceLoadAsMod"] = "true"
             }
         }
         if (propertyBoolean("use_access_transformer")) {
             attributeMap["FMLAT"] = propertyString("access_transformer_locations")
         }
-        if (propertyBoolean("use_mixinbooter")) {
+        if (propertyBoolean("use_mixinbooter") && propertyString("mixin_connector_class").isNotBlank()) {
             attributeMap["MixinConnector"] = propertyString("mixin_connector_class")
         }
         attributes(attributeMap)
